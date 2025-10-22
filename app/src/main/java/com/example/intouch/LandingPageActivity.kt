@@ -1,6 +1,5 @@
 package com.example.intouch
 
-
 import android.app.PendingIntent
 import android.content.Intent
 import android.nfc.NfcAdapter
@@ -9,6 +8,9 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.intouch.AddCardActivity
+import com.example.intouch.MainActivity
+import com.example.intouch.ViewCardActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError

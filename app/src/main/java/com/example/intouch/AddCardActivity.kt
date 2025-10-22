@@ -2,12 +2,18 @@ package com.example.intouch
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Base64
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +22,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.io.ByteArrayOutputStream
 
 class AddCardActivity : AppCompatActivity() {
 
@@ -23,7 +30,11 @@ class AddCardActivity : AppCompatActivity() {
     private lateinit var database: FirebaseDatabase
     private var nfcAdapter: NfcAdapter? = null
     private var nfcCardId: String? = null
+    private var profileImageBase64: String? = null
 
+    private lateinit var ivProfilePicture: ImageView
+    private lateinit var btnSelectImage: Button
+    private lateinit var btnRemoveImage: Button
     private lateinit var etFullName: EditText
     private lateinit var etProfession: EditText
     private lateinit var etOrganization: EditText
@@ -37,6 +48,11 @@ class AddCardActivity : AppCompatActivity() {
     private lateinit var btnSave: Button
     private lateinit var tvNfcStatus: TextView
 
+    companion object {
+        private const val PICK_IMAGE_REQUEST = 1
+        private const val MAX_IMAGE_SIZE = 800 // Max width/height in pixels
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_card)
@@ -45,6 +61,9 @@ class AddCardActivity : AppCompatActivity() {
         database = FirebaseDatabase.getInstance()
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
 
+        ivProfilePicture = findViewById(R.id.ivProfilePicture)
+        btnSelectImage = findViewById(R.id.btnSelectImage)
+        btnRemoveImage = findViewById(R.id.btnRemoveImage)
         etFullName = findViewById(R.id.etFullName)
         etProfession = findViewById(R.id.etProfession)
         etOrganization = findViewById(R.id.etOrganization)
@@ -64,6 +83,14 @@ class AddCardActivity : AppCompatActivity() {
 
         // Load existing data if available
         loadExistingData()
+
+        btnSelectImage.setOnClickListener {
+            openGallery()
+        }
+
+        btnRemoveImage.setOnClickListener {
+            removeProfileImage()
+        }
 
         cbNoNFC.setOnCheckedChangeListener { _, isChecked ->
             btnScanNFC.isEnabled = !isChecked
@@ -94,6 +121,79 @@ class AddCardActivity : AppCompatActivity() {
         }
     }
 
+    private fun openGallery() {
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        intent.type = "image/*"
+        startActivityForResult(intent, PICK_IMAGE_REQUEST)
+    }
+
+    private fun removeProfileImage() {
+        profileImageBase64 = null
+        ivProfilePicture.setImageResource(android.R.drawable.ic_menu_gallery)
+        btnRemoveImage.visibility = android.view.View.GONE
+        Toast.makeText(this, "Profile picture removed", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
+            val imageUri = data.data
+            if (imageUri != null) {
+                try {
+                    // Load and compress the image
+                    val bitmap = loadAndCompressImage(imageUri)
+
+                    // Display the image
+                    ivProfilePicture.setImageBitmap(bitmap)
+                    btnRemoveImage.visibility = android.view.View.VISIBLE
+
+                    // Convert to Base64
+                    profileImageBase64 = bitmapToBase64(bitmap)
+
+                    Toast.makeText(this, "Image selected successfully", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun loadAndCompressImage(uri: Uri): Bitmap {
+        val inputStream = contentResolver.openInputStream(uri)
+        val originalBitmap = BitmapFactory.decodeStream(inputStream)
+        inputStream?.close()
+
+        // Calculate scaling factor
+        val scale = calculateScale(originalBitmap.width, originalBitmap.height)
+
+        // Resize bitmap
+        val scaledWidth = (originalBitmap.width * scale).toInt()
+        val scaledHeight = (originalBitmap.height * scale).toInt()
+
+        return Bitmap.createScaledBitmap(originalBitmap, scaledWidth, scaledHeight, true)
+    }
+
+    private fun calculateScale(width: Int, height: Int): Float {
+        val maxDimension = maxOf(width, height)
+        return if (maxDimension > MAX_IMAGE_SIZE) {
+            MAX_IMAGE_SIZE.toFloat() / maxDimension
+        } else {
+            1f
+        }
+    }
+
+    private fun bitmapToBase64(bitmap: Bitmap): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
+    }
+
+    private fun base64ToBitmap(base64String: String): Bitmap {
+        val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
+        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    }
+
     private fun loadExistingData() {
         val userId = auth.currentUser?.uid ?: return
         database.reference.child("users").child(userId)
@@ -116,6 +216,19 @@ class AddCardActivity : AppCompatActivity() {
                                 tvNfcStatus.text = "✓ Manual mode (No NFC card)"
                             } else {
                                 tvNfcStatus.text = "✓ NFC Card: $savedNfcId"
+                            }
+                        }
+
+                        // Load profile picture if exists
+                        val profileImageData = snapshot.child("profileImage").value?.toString()
+                        if (!profileImageData.isNullOrEmpty()) {
+                            try {
+                                val bitmap = base64ToBitmap(profileImageData)
+                                ivProfilePicture.setImageBitmap(bitmap)
+                                profileImageBase64 = profileImageData
+                                btnRemoveImage.visibility = android.view.View.VISIBLE
+                            } catch (e: Exception) {
+                                // If loading fails, just keep default
                             }
                         }
                     }
@@ -158,14 +271,12 @@ class AddCardActivity : AppCompatActivity() {
     }
 
     private fun handleNfcTag(tag: Tag) {
-        // Read the UID from the tag (works with non-NDEF formatted tags)
         val uid = tag.id?.joinToString("") { String.format("%02X", it) }
 
         if (uid != null) {
             nfcCardId = uid
             tvNfcStatus.text = "✓ NFC Card scanned: $uid"
 
-            // Provide haptic feedback
             try {
                 val vibrator = getSystemService(android.content.Context.VIBRATOR_SERVICE) as android.os.Vibrator
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -215,6 +326,10 @@ class AddCardActivity : AppCompatActivity() {
             nfcCardId = "MANUAL_$userId"
         }
 
+        // Show progress
+        btnSave.isEnabled = false
+        btnSave.text = "Saving..."
+
         val cardData = hashMapOf(
             "fullName" to fullName,
             "profession" to profession,
@@ -228,24 +343,36 @@ class AddCardActivity : AppCompatActivity() {
             "userId" to userId
         )
 
+        // Add profile image if exists
+        if (!profileImageBase64.isNullOrEmpty()) {
+            cardData["profileImage"] = profileImageBase64!!
+        }
+
         database.reference.child("users").child(userId).setValue(cardData)
             .addOnSuccessListener {
-                // Also map NFC card ID to user ID for lookup
                 if (nfcCardId != null && !nfcCardId!!.startsWith("MANUAL_")) {
                     database.reference.child("nfcCards").child(nfcCardId!!).setValue(userId)
                         .addOnSuccessListener {
+                            btnSave.isEnabled = true
+                            btnSave.text = "Save Card"
                             Toast.makeText(this, "Card saved successfully!", Toast.LENGTH_SHORT).show()
                             finish()
                         }
                         .addOnFailureListener { e ->
+                            btnSave.isEnabled = true
+                            btnSave.text = "Save Card"
                             Toast.makeText(this, "Error mapping NFC card: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 } else {
+                    btnSave.isEnabled = true
+                    btnSave.text = "Save Card"
                     Toast.makeText(this, "Card saved successfully!", Toast.LENGTH_SHORT).show()
                     finish()
                 }
             }
             .addOnFailureListener { e ->
+                btnSave.isEnabled = true
+                btnSave.text = "Save Card"
                 Toast.makeText(this, "Error saving card: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }

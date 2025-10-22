@@ -1,9 +1,10 @@
 package com.example.intouch
 
-
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Base64
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -20,6 +21,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 class ViewCardActivity : AppCompatActivity() {
 
     private lateinit var database: FirebaseDatabase
+    private lateinit var ivProfilePicture: ImageView
     private lateinit var tvFullName: TextView
     private lateinit var tvProfession: TextView
     private lateinit var tvOrganization: TextView
@@ -41,6 +43,7 @@ class ViewCardActivity : AppCompatActivity() {
 
         database = FirebaseDatabase.getInstance()
 
+        ivProfilePicture = findViewById(R.id.ivProfilePicture)
         tvFullName = findViewById(R.id.tvFullName)
         tvProfession = findViewById(R.id.tvProfession)
         tvOrganization = findViewById(R.id.tvOrganization)
@@ -73,6 +76,11 @@ class ViewCardActivity : AppCompatActivity() {
         }
     }
 
+    private fun base64ToBitmap(base64String: String): Bitmap {
+        val decodedBytes = Base64.decode(base64String, Base64.DEFAULT)
+        return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+    }
+
     private fun loadUserData(userId: String) {
         database.reference.child("users").child(userId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
@@ -82,6 +90,19 @@ class ViewCardActivity : AppCompatActivity() {
                         tvProfession.text = snapshot.child("profession").value?.toString() ?: "N/A"
                         tvBio.text = snapshot.child("bio").value?.toString() ?: "N/A"
                         tvEmail.text = snapshot.child("email").value?.toString() ?: "N/A"
+
+                        // Load profile picture if exists
+                        val profileImageData = snapshot.child("profileImage").value?.toString()
+                        if (!profileImageData.isNullOrEmpty()) {
+                            try {
+                                val bitmap = base64ToBitmap(profileImageData)
+                                ivProfilePicture.setImageBitmap(bitmap)
+                            } catch (e: Exception) {
+                                ivProfilePicture.setImageResource(android.R.drawable.ic_menu_gallery)
+                            }
+                        } else {
+                            ivProfilePicture.setImageResource(android.R.drawable.ic_menu_gallery)
+                        }
 
                         val organization = snapshot.child("organization").value?.toString()
                         if (!organization.isNullOrEmpty()) {

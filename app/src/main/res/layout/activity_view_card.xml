@@ -17,6 +17,17 @@
             android:textStyle="bold"
             android:layout_marginBottom="24dp"/>
 
+        <!-- Profile Picture -->
+        <ImageView
+            android:id="@+id/ivProfilePicture"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:scaleType="centerCrop"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="24dp"/>
+
         <LinearLayout
             android:id="@+id/layoutQRCode"
             android:layout_width="match_parent"

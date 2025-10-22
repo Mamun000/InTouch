@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
     implementation(libs.androidx.cardview)
+    implementation(libs.firebase.storage)
 
     // Testing
     testImplementation(libs.junit)

@@ -17,6 +17,52 @@
             android:textStyle="bold"
             android:layout_marginBottom="24dp"/>
 
+        <!-- Profile Picture Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Profile Picture (Optional)"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <ImageView
+            android:id="@+id/ivProfilePicture"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center"
+            android:src="@android:drawable/ic_menu_gallery"
+            android:scaleType="centerCrop"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="12dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="24dp">
+
+            <Button
+                android:id="@+id/btnSelectImage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Select Image"
+                android:layout_marginEnd="8dp"/>
+
+            <Button
+                android:id="@+id/btnRemoveImage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Remove"
+                android:visibility="gone"
+                android:layout_marginStart="8dp"/>
+
+        </LinearLayout>
+
+        <!-- NFC Section -->
         <CheckBox
             android:id="@+id/cbNoNFC"
             android:layout_width="wrap_content"
@@ -41,6 +87,7 @@
             android:gravity="center"
             android:layout_marginBottom="24dp"/>
 
+        <!-- Form Fields -->
         <EditText
             android:id="@+id/etFullName"
             android:layout_width="match_parent"
