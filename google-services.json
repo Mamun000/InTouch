@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "812708884421",
+    "project_id": "intouch-d5af5",
+    "storage_bucket": "intouch-d5af5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:812708884421:android:b61be6c121b3087f67a5ac",
+        "android_client_info": {
+          "package_name": "com.example.intouch"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "812708884421-1jkr0uqvnsrshc5t39j5mqkh732g5lo0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.intouch",
+            "certificate_hash": "9434f13cacab1ddbbdf153f9ecc9275df2eef2c7"
+          }
+        },
+        {
+          "client_id": "812708884421-ll09cn52hn73tafvnsjbg5iin2d3r45n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC40tJLBl2Ewr7JnDjOF0vmUzbJBSHO5Ig"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "812708884421-ll09cn52hn73tafvnsjbg5iin2d3r45n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
