@@ -50,7 +50,8 @@
         </activity>
         <activity
             android:name=".LandingPageActivity"
-            android:exported="true" /> <!-- Main Activity (Launcher) -->
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/> <!-- Main Activity (Launcher) -->
         <activity
             android:name=".MainActivity"
             android:exported="true">

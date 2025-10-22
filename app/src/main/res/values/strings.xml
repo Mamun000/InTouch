@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">InTouch</string>
     <string name="default_web_client_id">843892547386-cltuhkng4b3dfirp7aahv5deib7klkpe.apps.googleusercontent.com</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

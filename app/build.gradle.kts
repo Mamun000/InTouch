@@ -68,4 +68,11 @@ dependencies {
     // QR Code Scanner
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.2")
+
+    // Material Design
+    implementation("com.google.android.material:material:1.11.0")
+// CardView
+    implementation("androidx.cardview:cardview:1.0.0")
+// DrawerLayout
+    implementation("androidx.drawerlayout:drawerlayout:1.2.0")
 }
