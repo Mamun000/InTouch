@@ -32,6 +32,7 @@ class AddCardActivity : AppCompatActivity() {
     private var nfcCardId: String? = null
     private var profileImageBase64: String? = null
 
+    private lateinit var toolbar: androidx.appcompat.widget.Toolbar
     private lateinit var ivProfilePicture: ImageView
     private lateinit var btnSelectImage: Button
     private lateinit var btnRemoveImage: Button
@@ -50,7 +51,7 @@ class AddCardActivity : AppCompatActivity() {
 
     companion object {
         private const val PICK_IMAGE_REQUEST = 1
-        private const val MAX_IMAGE_SIZE = 800 // Max width/height in pixels
+        private const val MAX_IMAGE_SIZE = 800
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -77,11 +78,9 @@ class AddCardActivity : AppCompatActivity() {
         btnSave = findViewById(R.id.btnSave)
         tvNfcStatus = findViewById(R.id.tvNfcStatus)
 
-        // Auto-fill email
         etEmail.setText(auth.currentUser?.email ?: "")
         etEmail.isEnabled = false
 
-        // Load existing data if available
         loadExistingData()
 
         btnSelectImage.setOnClickListener {
@@ -140,16 +139,10 @@ class AddCardActivity : AppCompatActivity() {
             val imageUri = data.data
             if (imageUri != null) {
                 try {
-                    // Load and compress the image
                     val bitmap = loadAndCompressImage(imageUri)
-
-                    // Display the image
                     ivProfilePicture.setImageBitmap(bitmap)
                     btnRemoveImage.visibility = android.view.View.VISIBLE
-
-                    // Convert to Base64
                     profileImageBase64 = bitmapToBase64(bitmap)
-
                     Toast.makeText(this, "Image selected successfully", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
                     Toast.makeText(this, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -163,10 +156,7 @@ class AddCardActivity : AppCompatActivity() {
         val originalBitmap = BitmapFactory.decodeStream(inputStream)
         inputStream?.close()
 
-        // Calculate scaling factor
         val scale = calculateScale(originalBitmap.width, originalBitmap.height)
-
-        // Resize bitmap
         val scaledWidth = (originalBitmap.width * scale).toInt()
         val scaledHeight = (originalBitmap.height * scale).toInt()
 
@@ -215,11 +205,10 @@ class AddCardActivity : AppCompatActivity() {
                                 cbNoNFC.isChecked = true
                                 tvNfcStatus.text = "✓ Manual mode (No NFC card)"
                             } else {
-                                tvNfcStatus.text = "✓ NFC Card: $savedNfcId"
+                                tvNfcStatus.text = "✓ Current NFC Card: $savedNfcId"
                             }
                         }
 
-                        // Load profile picture if exists
                         val profileImageData = snapshot.child("profileImage").value?.toString()
                         if (!profileImageData.isNullOrEmpty()) {
                             try {
@@ -326,15 +315,106 @@ class AddCardActivity : AppCompatActivity() {
             nfcCardId = "MANUAL_$userId"
         }
 
-        // Show progress
         btnSave.isEnabled = false
         btnSave.text = "Saving..."
 
+        // Check if NFC card is already registered to another user
+        if (nfcCardId != null && !nfcCardId!!.startsWith("MANUAL_")) {
+            checkNfcCardAvailability(userId, nfcCardId!!)
+        } else {
+            saveToDatabase(userId)
+        }
+    }
+
+    private fun checkNfcCardAvailability(currentUserId: String, cardId: String) {
+        // First, check if user has an old NFC card to unregister
+        database.reference.child("users").child(currentUserId).child("nfcCardId")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(userSnapshot: DataSnapshot) {
+                    val oldNfcCardId = userSnapshot.value?.toString()
+
+                    // Check if the new card is already registered
+                    database.reference.child("nfcCards").child(cardId)
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                if (snapshot.exists()) {
+                                    val existingUserId = snapshot.value.toString()
+
+                                    if (existingUserId != currentUserId) {
+                                        // NFC card is already taken by another user
+                                        btnSave.isEnabled = true
+                                        btnSave.text = "Save Card"
+
+                                        androidx.appcompat.app.AlertDialog.Builder(this@AddCardActivity)
+                                            .setTitle("NFC Card Already Registered")
+                                            .setMessage("This NFC card is already registered to another user. Each NFC card can only be used by one user.\n\nPlease use a different NFC card or choose 'No NFC Card' option.")
+                                            .setPositiveButton("Scan Different Card") { dialog, _ ->
+                                                nfcCardId = oldNfcCardId
+                                                if (oldNfcCardId != null && !oldNfcCardId.startsWith("MANUAL_")) {
+                                                    tvNfcStatus.text = "✓ Current NFC Card: $oldNfcCardId"
+                                                } else {
+                                                    tvNfcStatus.text = "Tap 'Scan NFC Card' button"
+                                                }
+                                                dialog.dismiss()
+                                            }
+                                            .setNegativeButton("Use Manual Mode") { dialog, _ ->
+                                                cbNoNFC.isChecked = true
+                                                dialog.dismiss()
+                                            }
+                                            .setCancelable(false)
+                                            .show()
+                                    } else {
+                                        unregisterOldCardAndSave(currentUserId, oldNfcCardId)
+                                    }
+                                } else {
+                                    unregisterOldCardAndSave(currentUserId, oldNfcCardId)
+                                }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                btnSave.isEnabled = true
+                                btnSave.text = "Save Card"
+                                Toast.makeText(
+                                    this@AddCardActivity,
+                                    "Error checking card: ${error.message}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        })
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    btnSave.isEnabled = true
+                    btnSave.text = "Save Card"
+                    Toast.makeText(
+                        this@AddCardActivity,
+                        "Error: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            })
+    }
+
+    private fun unregisterOldCardAndSave(userId: String, oldCardId: String?) {
+        if (oldCardId != null && !oldCardId.startsWith("MANUAL_") && oldCardId != nfcCardId) {
+            database.reference.child("nfcCards").child(oldCardId).removeValue()
+                .addOnSuccessListener {
+                    saveToDatabase(userId)
+                }
+                .addOnFailureListener {
+                    saveToDatabase(userId)
+                }
+        } else {
+            saveToDatabase(userId)
+        }
+    }
+
+    private fun saveToDatabase(userId: String) {
         val cardData = hashMapOf(
-            "fullName" to fullName,
-            "profession" to profession,
+            "fullName" to etFullName.text.toString().trim(),
+            "profession" to etProfession.text.toString().trim(),
             "organization" to etOrganization.text.toString().trim(),
-            "bio" to bio,
+            "bio" to etBio.text.toString().trim(),
             "email" to etEmail.text.toString().trim(),
             "phone" to etPhone.text.toString().trim(),
             "linkedIn" to etLinkedIn.text.toString().trim(),
@@ -343,7 +423,6 @@ class AddCardActivity : AppCompatActivity() {
             "userId" to userId
         )
 
-        // Add profile image if exists
         if (!profileImageBase64.isNullOrEmpty()) {
             cardData["profileImage"] = profileImageBase64!!
         }
