@@ -75,4 +75,5 @@ dependencies {
     implementation("androidx.cardview:cardview:1.0.0")
 // DrawerLayout
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
+    implementation("androidx.multidex:multidex:2.0.1")
 }

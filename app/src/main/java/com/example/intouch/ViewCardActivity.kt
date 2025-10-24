@@ -14,6 +14,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
 import com.google.firebase.database.DataSnapshot
@@ -51,6 +52,15 @@ class ViewCardActivity : AppCompatActivity() {
     private lateinit var btnSaveContact: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val prefs = getSharedPreferences("AppPreferences", MODE_PRIVATE)
+        val isDarkMode = prefs.getBoolean("dark_mode", false)
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_card)
 

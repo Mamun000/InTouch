@@ -16,6 +16,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
 import androidx.core.view.GravityCompat
@@ -31,6 +32,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentResult
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlin.jvm.java
 
 class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -47,6 +49,15 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     private lateinit var tvWelcome: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val prefs = getSharedPreferences("AppPreferences", MODE_PRIVATE)
+        val isDarkMode = prefs.getBoolean("dark_mode", false)
+        if (isDarkMode) {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        } else {
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        }
+
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing_page)
 
@@ -161,11 +172,11 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
         }
 
         cardScanHistory.setOnClickListener {
-            Toast.makeText(this, "Scan History - Coming Soon", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, ScanHistoryActivity::class.java))
         }
 
         cardSettings.setOnClickListener {
-            Toast.makeText(this, "Settings - Coming Soon", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
 
@@ -249,10 +260,10 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                 startActivity(Intent(this, AddCardActivity::class.java))
             }
             R.id.nav_scan_history -> {
-                Toast.makeText(this, "Scan History - Coming Soon", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, ScanHistoryActivity::class.java))
             }
             R.id.nav_settings -> {
-                Toast.makeText(this, "Settings - Coming Soon", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, SettingsActivity::class.java))
             }
             R.id.nav_logout -> {
                 auth.signOut()
@@ -326,6 +337,10 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
                         val userId = snapshot.value.toString()
+
+                        // Save to scan history
+                        saveScanHistory(userId)
+
                         val intent = Intent(this@LandingPageActivity, ViewCardActivity::class.java)
                         intent.putExtra("USER_ID", userId)
                         startActivity(intent)
@@ -348,6 +363,25 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
             })
     }
 
+    private fun saveScanHistory(scannedUserId: String) {
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        // Don't save if scanning own card
+        if (currentUserId == scannedUserId) return
+
+        val timestamp = System.currentTimeMillis()
+        val scanData = mapOf(
+            "scannedUserId" to scannedUserId,
+            "timestamp" to timestamp
+        )
+
+        // Save to current user's scan history
+        database.reference.child("scanHistory")
+            .child(currentUserId)
+            .child(scannedUserId)
+            .setValue(scanData)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         val result: IntentResult? = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
         if (result != null) {
@@ -355,6 +389,10 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                 Toast.makeText(this, "Scan cancelled", Toast.LENGTH_SHORT).show()
             } else {
                 val userId = result.contents
+
+                // Save to scan history
+                saveScanHistory(userId)
+
                 val intent = Intent(this, ViewCardActivity::class.java)
                 intent.putExtra("USER_ID", userId)
                 startActivity(intent)

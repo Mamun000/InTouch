@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
     <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-
-    <!-- NFC Feature -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- NFC Feature -->
     <uses-feature
         android:name="android.hardware.nfc"
         android:required="false" />
-
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -26,24 +22,36 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InTouch">
         <activity
+            android:name=".ScanHistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ViewCardActivity"
             android:exported="true" />
         <activity
             android:name=".AddCardActivity"
-            android:exported="true" >
+            android:exported="true">
+
             <!-- NFC Intent Filters -->
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+
                 <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="text/plain" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.nfc.action.TAG_DISCOVERED" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
             </intent-filter>
+
             <meta-data
                 android:name="android.nfc.action.TECH_DISCOVERED"
                 android:resource="@xml/nfc_tech_filter" />
@@ -51,7 +59,7 @@
         <activity
             android:name=".LandingPageActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/> <!-- Main Activity (Launcher) -->
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" /> <!-- Main Activity (Launcher) -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -68,6 +76,5 @@
             android:name=".ForgetPassword"
             android:exported="false" />
     </application>
-
 
 </manifest>
