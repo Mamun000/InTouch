@@ -21,13 +21,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.InTouch">
+        <activity android:name=".ChatActivity"
+            android:exported="true" />
+        <activity
+            android:name=".ChatsActivity"
+            android:exported="true" />
         <activity
             android:name=".ScanHistoryActivity"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".SettingsActivity"
-            android:exported="false" />
-
+            android:exported="true" />
         <activity
             android:name=".ViewCardActivity"
             android:exported="true" />

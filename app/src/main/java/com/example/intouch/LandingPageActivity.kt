@@ -152,7 +152,10 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                     true
                 }
                 R.id.nav_home -> {
-                    // Already on home
+                    true
+                }
+                R.id.nav_chats -> {
+                    startActivity(Intent(this, ChatsActivity::class.java))
                     true
                 }
                 R.id.nav_scan_qr -> {
@@ -162,7 +165,6 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                 else -> false
             }
         }
-        // Set home as selected
         bottomNavigation.selectedItemId = R.id.nav_home
     }
 
