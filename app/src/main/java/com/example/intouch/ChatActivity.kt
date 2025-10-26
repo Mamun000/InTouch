@@ -1,9 +1,9 @@
 package com.example.intouch
 
-
 import android.os.Bundle
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -45,17 +45,24 @@ class ChatActivity : AppCompatActivity() {
     }
 
     private fun initializeViews() {
-        toolbar = findViewById(R.id.toolbar)
-        recyclerView = findViewById(R.id.recyclerView)
-        etMessage = findViewById(R.id.etMessage)
-        btnSend = findViewById(R.id.btnSend)
+        try {
+            toolbar = findViewById(R.id.toolbar)
+            recyclerView = findViewById(R.id.recyclerView)
+            etMessage = findViewById(R.id.etMessage)
+            btnSend = findViewById(R.id.btnSend)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Error initializing views: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupToolbar() {
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setDisplayShowHomeEnabled(true)
-        supportActionBar?.title = friendName
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setDisplayShowHomeEnabled(true)
+            title = friendName
+        }
         toolbar.setNavigationOnClickListener {
             finish()
         }
@@ -97,18 +104,32 @@ class ChatActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    // Handle error
+                    Toast.makeText(
+                        this@ChatActivity,
+                        "Error loading messages: ${error.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             })
     }
 
     private fun sendMessage() {
         val messageText = etMessage.text.toString().trim()
-        if (messageText.isEmpty()) return
+        if (messageText.isEmpty()) {
+            Toast.makeText(this, "Please type a message", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-        val currentUserId = auth.currentUser?.uid ?: return
+        val currentUserId = auth.currentUser?.uid ?: run {
+            Toast.makeText(this, "User not authenticated", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val timestamp = System.currentTimeMillis()
-        val messageId = database.reference.child("chats").child(chatId).child("messages").push().key ?: return
+        val messageId = database.reference.child("chats").child(chatId).child("messages").push().key ?: run {
+            Toast.makeText(this, "Failed to generate message ID", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val message = Message(
             messageId = messageId,
@@ -118,11 +139,11 @@ class ChatActivity : AppCompatActivity() {
             timestamp = timestamp
         )
 
-        // Save message
+        // Save message to Firebase
         database.reference.child("chats").child(chatId).child("messages").child(messageId)
             .setValue(message)
             .addOnSuccessListener {
-                // Update last message
+                // Update last message info
                 val lastMessageData = mapOf(
                     "text" to messageText,
                     "timestamp" to timestamp,
@@ -132,11 +153,22 @@ class ChatActivity : AppCompatActivity() {
                 database.reference.child("chats").child(chatId).child("lastMessage")
                     .setValue(lastMessageData)
 
+                // Clear input
                 etMessage.setText("")
+                Toast.makeText(this, "Message sent", Toast.LENGTH_SHORT).show()
             }
-            .addOnFailureListener {
-                android.widget.Toast.makeText(this, "Failed to send message", android.widget.Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { exception ->
+                Toast.makeText(
+                    this,
+                    "Failed to send message: ${exception.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 }
 

@@ -2,6 +2,7 @@ package com.example.intouch
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -57,7 +58,6 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         }
 
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing_page)
 
@@ -69,8 +69,91 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
         setupToolbar()
         setupNavigationDrawer()
         setupBottomNavigation()
+
+        // ✅ Setup Carousel with Real Images
+        setupCarouselView()
+
         loadUserData()
         setupCardClicks()
+    }
+    private fun setupCarouselView() {
+        val viewPagerCarousel = findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPagerCarousel)
+        val indicatorsContainer = findViewById<android.widget.LinearLayout>(R.id.indicatorsContainer)
+
+        // ✅ Use your actual image drawables: img_1, img_2, img_3, img_4, etc.
+        val carouselImages = listOf(
+            R.drawable.img_1,  // Your image 1
+            R.drawable.img,  // Your image 2
+            R.drawable.img_1,  // Your image 3 (if you have it)
+            R.drawable.img   // Your image 4 (if you have it)
+        )
+
+        // Setup ViewPager2 with Carousel Adapter
+        viewPagerCarousel.apply {
+            adapter = CarouselAdapter(carouselImages)
+            // Optional: Add page transformer for smooth animation
+            setPageTransformer { page, position ->
+                page.alpha = when {
+                    position < -1 -> 0f
+                    position <= 0 -> 1f - Math.abs(position)
+                    position <= 1 -> 1f - Math.abs(position)
+                    else -> 0f
+                }
+            }
+        }
+
+        // Setup carousel indicators (dots)
+        setupIndicators(indicatorsContainer, carouselImages.size)
+
+        // Update indicators when carousel page changes
+        viewPagerCarousel.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                updateIndicators(indicatorsContainer, position)
+            }
+        })
+
+        // Auto-scroll carousel every 4 seconds
+        startAutoScroll(viewPagerCarousel, carouselImages.size)
+    }
+
+    // ✅ Create carousel indicators (dots)
+    private fun setupIndicators(container: android.widget.LinearLayout, count: Int) {
+        container.removeAllViews()
+
+        for (i in 0 until count) {
+            val indicator = android.view.View(this).apply {
+                layoutParams = android.widget.LinearLayout.LayoutParams(12, 12).apply {
+                    setMargins(6, 0, 6, 0)
+                }
+                setBackgroundResource(
+                    if (i == 0) R.drawable.indicator_active
+                    else R.drawable.indicator_inactive
+                )
+            }
+            container.addView(indicator)
+        }
+    }
+
+    // ✅ Update indicators when page changes
+    private fun updateIndicators(container: android.widget.LinearLayout, activePosition: Int) {
+        for (i in 0 until container.childCount) {
+            val indicator = container.getChildAt(i)
+            indicator.setBackgroundResource(
+                if (i == activePosition) R.drawable.indicator_active
+                else R.drawable.indicator_inactive
+            )
+        }
+    }
+
+    // ✅ Auto-scroll carousel
+    private fun startAutoScroll(viewPager: androidx.viewpager2.widget.ViewPager2, itemCount: Int) {
+        viewPager.post(object : Runnable {
+            override fun run() {
+                val nextItem = (viewPager.currentItem + 1) % itemCount
+                viewPager.setCurrentItem(nextItem, true)
+                viewPager.postDelayed(this, 4000) // Auto-scroll every 4 seconds
+            }
+        })
     }
 
     private fun initializeViews() {
@@ -87,7 +170,7 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     private fun setupToolbar() {
         setSupportActionBar(toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.title = "Digital Card Exchange"
+        supportActionBar?.title = ""
     }
 
     private fun setupNavigationDrawer() {
@@ -212,13 +295,16 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     }
 
     private fun scanQRCode() {
+        // ✅ FIX: Lock to portrait orientation for QR scanner
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
         val integrator = IntentIntegrator(this)
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
         integrator.setPrompt("Scan QR Code")
         integrator.setCameraId(0)
         integrator.setBeepEnabled(true)
         integrator.setBarcodeImageEnabled(false)
-        integrator.setOrientationLocked(false)
+        integrator.setOrientationLocked(false)  // ✅ CHANGED: Allow orientation to be managed by us
         integrator.initiateScan()
     }
 
@@ -294,6 +380,8 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
 
     override fun onPause() {
         super.onPause()
+        // ✅ FIX: Reset orientation when leaving
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         nfcAdapter?.disableForegroundDispatch(this)
     }
 
@@ -401,14 +489,6 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
-        }
-    }
-
-    override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            super.onBackPressed()
         }
     }
 }

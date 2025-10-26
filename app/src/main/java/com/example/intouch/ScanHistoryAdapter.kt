@@ -1,6 +1,5 @@
 package com.example.intouch
 
-
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,17 +19,22 @@ class ScanHistoryAdapter(
         val tvName: TextView = itemView.findViewById(R.id.tvName)
         val tvProfession: TextView = itemView.findViewById(R.id.tvProfession)
         val tvTimestamp: TextView = itemView.findViewById(R.id.tvTimestamp)
+        val tvScanCount: TextView? = itemView.findViewById(R.id.tvScanCount)
 
-        fun bind(contact: Contact) {
+        fun bind(contact: Contact, position: Int) {
             tvName.text = contact.fullName
             tvProfession.text = contact.profession
             tvTimestamp.text = formatTimestamp(contact.timestamp)
 
+            // Set profile image
             if (contact.profileImage != null) {
                 ivProfile.setImageBitmap(contact.profileImage)
             } else {
                 ivProfile.setImageResource(R.drawable.ic_profile_placeholder)
             }
+
+            // Set scan count (position + 1 for display)
+            tvScanCount?.text = (position + 1).toString()
 
             itemView.setOnClickListener {
                 onContactClick(contact)
@@ -46,6 +50,7 @@ class ScanHistoryAdapter(
                 diff < 3600000 -> "${diff / 60000}m ago" // Less than 1 hour
                 diff < 86400000 -> "${diff / 3600000}h ago" // Less than 1 day
                 diff < 604800000 -> "${diff / 86400000}d ago" // Less than 1 week
+                diff < 2592000000 -> "${diff / 604800000}w ago" // Less than 1 month
                 else -> {
                     val sdf = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
                     sdf.format(Date(timestamp))
@@ -61,7 +66,7 @@ class ScanHistoryAdapter(
     }
 
     override fun onBindViewHolder(holder: ContactViewHolder, position: Int) {
-        holder.bind(contacts[position])
+        holder.bind(contacts[position], position)
     }
 
     override fun getItemCount(): Int = contacts.size

@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    app:cardElevation="0dp"
     android:layout_margin="8dp"
     android:foreground="?attr/selectableItemBackground"
     android:clickable="true"
@@ -15,25 +15,52 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="16dp"
         android:gravity="center_vertical">
 
-        <!-- Profile Picture -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="0dp">
+        <!-- Profile Picture with Badge -->
+        <FrameLayout
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginEnd="16dp">
 
-            <ImageView
-                android:id="@+id/ivProfile"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_profile_placeholder"
-                android:scaleType="centerCrop"
-                android:background="#F5F5F5"/>
+            <!-- Main Avatar -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                app:cardCornerRadius="30dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#F5F5F5">
 
-        </androidx.cardview.widget.CardView>
+                <ImageView
+                    android:id="@+id/ivProfile"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/ic_profile_placeholder"
+                    android:scaleType="centerCrop"
+                    android:background="#E0E0E0" />
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Scan Count Badge -->
+            <View
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:background="@drawable/circle_background_primary"
+                android:layout_gravity="bottom|end" />
+
+            <TextView
+                android:id="@+id/tvScanCount"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:text="1"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:gravity="center"
+                android:layout_gravity="bottom|end" />
+
+        </FrameLayout>
 
         <!-- Contact Info -->
         <LinearLayout
@@ -41,8 +68,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:layout_marginEnd="12dp">
 
+            <!-- Name -->
             <TextView
                 android:id="@+id/tvName"
                 android:layout_width="wrap_content"
@@ -50,40 +78,65 @@
                 android:text="Contact Name"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@color/text_primary"
+                android:textColor="#222222"
                 android:maxLines="1"
-                android:ellipsize="end"/>
+                android:ellipsize="end"
+                android:layout_marginBottom="4dp" />
 
+            <!-- Profession -->
             <TextView
                 android:id="@+id/tvProfession"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Profession"
+                android:text="Professional Title"
                 android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginTop="2dp"
+                android:textColor="#999999"
                 android:maxLines="1"
-                android:ellipsize="end"/>
+                android:ellipsize="end"
+                android:layout_marginBottom="6dp" />
 
-            <TextView
-                android:id="@+id/tvTimestamp"
+            <!-- Last Scanned Time -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="2h ago"
-                android:textSize="12sp"
-                android:textColor="@color/primary"
-                android:layout_marginTop="4dp"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_history"
+                    app:tint="#FF5722"
+                    android:layout_marginEnd="4dp" />
+
+                <TextView
+                    android:id="@+id/tvTimestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2 hours ago"
+                    android:textSize="12sp"
+                    android:textColor="#FF5722"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
-        <!-- Arrow Icon -->
+        <!-- Action Arrow -->
         <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:src="@drawable/ic_arrow_right"
-            app:tint="@color/text_secondary"
-            android:layout_marginStart="8dp"/>
+            app:tint="#DDDDDD"
+            android:scaleType="centerInside" />
 
     </LinearLayout>
+
+    <!-- Divider (optional - remove if not needed) -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:background="#F0F0F0"
+        android:layout_gravity="bottom" />
 
 </androidx.cardview.widget.CardView>

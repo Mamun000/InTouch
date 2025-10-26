@@ -5,27 +5,39 @@
     <color name="white">#FFFFFF</color>
     <color name="gray">#757575</color>
     <color name="light_gray">#E0E0E0</color>
+    <color name="primary">#FF5722</color>
+    <color name="secondary">#FF9800</color>
+    <color name="text_primary">#222222</color>
+    <color name="text_secondary">#999999</color>
+    <color name="background">#FAFAFA</color>
+    <color name="surface">#FFFFFF</color>
 
         <!-- Primary Colors -->
-        <color name="primary">#5E35B1</color>
+
         <color name="primary_dark">#4527A0</color>
         <color name="primary_light">#7E57C2</color>
 
         <!-- Accent Colors -->
         <color name="accent">#FF6F00</color>
-        <color name="secondary">#00897B</color>
 
         <!-- Text Colors -->
-        <color name="text_primary">#212121</color>
-        <color name="text_secondary">#757575</color>
 
         <!-- Background Colors -->
-        <color name="background">#FAFAFA</color>
         <color name="card_background">#FFFFFF</color>
 
-        <!-- Status Colors -->
-        <color name="success">#4CAF50</color>
-        <color name="error">#F44336</color>
-        <color name="warning">#FF9800</color>
+
+    <color name="warning">#FF9800</color>
+    <color name="surface_light">#F5F5F5</color>
+
+    <!-- Divider -->
+    <color name="divider">#E0E0E0</color>
+
+    <!-- Status Colors -->
+    <color name="error">#E53935</color>
+    <color name="success">#4CAF50</color>
+
+    <!-- Social Colors -->
+    <color name="linkedin">#0077B5</color>
+    <color name="github">#333333</color>
 
 </resources>

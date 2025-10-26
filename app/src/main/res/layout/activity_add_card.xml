@@ -4,18 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background">
+    android:background="#FAFAFA">
 
     <!-- Toolbar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
+        android:background="@android:color/white"
         android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:title="Add/Update Card"/>
+        app:title="Create Your Card"
+        app:titleTextColor="@android:color/black" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -33,16 +32,16 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="20dp"
                 app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp"
+                    android:padding="24dp"
                     android:gravity="center">
 
                     <TextView
@@ -51,16 +50,16 @@
                         android:text="Profile Picture"
                         android:textSize="16sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="4dp"/>
+                        android:textColor="#222222"
+                        android:layout_marginBottom="4dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="(Optional)"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginBottom="16dp"/>
+                        android:text="Choose a professional photo"
+                        android:textSize="13sp"
+                        android:textColor="#999999"
+                        android:layout_marginBottom="20dp" />
 
                     <!-- Profile Picture -->
                     <androidx.cardview.widget.CardView
@@ -68,7 +67,7 @@
                         android:layout_height="120dp"
                         app:cardCornerRadius="60dp"
                         app:cardElevation="4dp"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="20dp">
 
                         <ImageView
                             android:id="@+id/ivProfilePicture"
@@ -76,7 +75,7 @@
                             android:layout_height="match_parent"
                             android:src="@drawable/ic_profile_placeholder"
                             android:scaleType="centerCrop"
-                            android:background="#F5F5F5"/>
+                            android:background="#F5F5F5" />
 
                     </androidx.cardview.widget.CardView>
 
@@ -90,25 +89,26 @@
                         <Button
                             android:id="@+id/btnSelectImage"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="48dp"
                             android:layout_weight="1"
-                            android:text="Select Image"
+                            android:text="Upload"
                             android:textSize="14sp"
                             android:layout_marginEnd="8dp"
-                            android:backgroundTint="@color/secondary"/>
+                            android:backgroundTint="#FF5722"
+                            android:textColor="@android:color/white" />
 
                         <Button
                             android:id="@+id/btnRemoveImage"
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
+                            android:layout_height="48dp"
                             android:layout_weight="1"
                             android:text="Remove"
                             android:textSize="14sp"
                             android:visibility="gone"
                             android:layout_marginStart="8dp"
                             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                            android:strokeColor="@color/error"
-                            android:textColor="@color/error"/>
+                            android:strokeColor="#FF5722"
+                            android:textColor="#FF5722" />
 
                     </LinearLayout>
 
@@ -120,89 +120,16 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="20dp"
                 app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_nfc"
-                            app:tint="@color/primary"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="NFC Card Setup"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginStart="8dp"/>
-
-                    </LinearLayout>
-
-                    <CheckBox
-                        android:id="@+id/cbNoNFC"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="I don't have an NFC card"
-                        android:textSize="14sp"
-                        android:layout_marginBottom="12dp"/>
-
-                    <Button
-                        android:id="@+id/btnScanNFC"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Scan NFC Card"
-                        android:drawableStart="@drawable/ic_nfc"
-                        android:drawablePadding="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:backgroundTint="@color/primary"/>
-
-                    <TextView
-                        android:id="@+id/tvNfcStatus"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Tap 'Scan NFC Card' button"
-                        android:textSize="13sp"
-                        android:textColor="@color/text_secondary"
-                        android:gravity="center"
-                        android:padding="8dp"
-                        android:background="@drawable/status_background"
-                        android:drawablePadding="8dp"/>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <!-- Personal Information Section -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -214,8 +141,83 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
+                            android:src="@drawable/ic_nfc"
+                            app:tint="#FF5722" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="NFC Card Setup"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="#222222"
+                            android:layout_marginStart="12dp" />
+
+                    </LinearLayout>
+
+                    <CheckBox
+                        android:id="@+id/cbNoNFC"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="I don't have an NFC card"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:layout_marginBottom="16dp" />
+
+                    <Button
+                        android:id="@+id/btnScanNFC"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:text="Tap to Scan NFC"
+                        android:drawableStart="@drawable/ic_nfc"
+                        android:drawablePadding="8dp"
+                        android:layout_marginBottom="12dp"
+                        android:backgroundTint="#FF5722"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/tvNfcStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Ready to scan"
+                        android:textSize="13sp"
+                        android:textColor="#FF5722"
+                        android:gravity="center"
+                        android:padding="12dp"
+                        android:background="@drawable/status_background"
+                        android:drawablePadding="8dp" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Personal Information Section -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="20dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="20dp">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
                             android:src="@drawable/ic_person"
-                            app:tint="@color/primary"/>
+                            app:tint="#FF5722" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -223,73 +225,88 @@
                             android:text="Personal Information"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginStart="8dp"/>
+                            android:textColor="#222222"
+                            android:layout_marginStart="12dp" />
 
                     </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Full Name *"
+                        android:hint="Full Name"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="16dp"
                         app:startIconDrawable="@drawable/ic_person"
-                        app:startIconTint="@color/primary">
+                        app:startIconTint="#FF5722"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etFullName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPersonName"
-                            android:maxLines="1"/>
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Profession *"
+                        android:hint="Profession"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="16dp"
                         app:startIconDrawable="@drawable/ic_work"
-                        app:startIconTint="@color/primary">
+                        app:startIconTint="#FF5722"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etProfession"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
-                            android:maxLines="1"/>
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Organization (optional)"
+                        android:hint="Organization"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="16dp"
                         app:startIconDrawable="@drawable/ic_business"
-                        app:startIconTint="@color/secondary">
+                        app:startIconTint="#FF9800"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etOrganization"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="text"
-                            android:maxLines="1"/>
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Bio *"
+                        android:hint="Bio"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="12dp"
                         app:startIconDrawable="@drawable/ic_info"
-                        app:startIconTint="@color/primary">
+                        app:startIconTint="#FF5722"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etBio"
@@ -298,7 +315,7 @@
                             android:inputType="textMultiLine"
                             android:minLines="3"
                             android:maxLines="5"
-                            android:gravity="top"/>
+                            android:gravity="top" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -310,29 +327,29 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="20dp"
                 app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="20dp">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_contact"
-                            app:tint="@color/primary"/>
+                            app:tint="#FF5722" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -340,8 +357,8 @@
                             android:text="Contact Information"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginStart="8dp"/>
+                            android:textColor="#222222"
+                            android:layout_marginStart="12dp" />
 
                     </LinearLayout>
 
@@ -350,9 +367,13 @@
                         android:layout_height="wrap_content"
                         android:hint="Email"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="16dp"
                         app:startIconDrawable="@drawable/ic_email"
-                        app:startIconTint="@color/secondary">
+                        app:startIconTint="#FF9800"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEmail"
@@ -360,25 +381,28 @@
                             android:layout_height="wrap_content"
                             android:inputType="textEmailAddress"
                             android:enabled="false"
-                            android:maxLines="1"/>
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Phone (optional)"
+                        android:hint="Phone Number"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="12dp"
                         app:startIconDrawable="@drawable/ic_phone"
-                        app:startIconTint="@color/secondary">
+                        app:startIconTint="#FF9800"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPhone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="phone"
-                            android:maxLines="1"/>
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -390,8 +414,8 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
                 android:layout_marginBottom="80dp"
                 app:cardBackgroundColor="@android:color/white">
 
@@ -399,20 +423,20 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="16dp">
+                        android:layout_marginBottom="20dp">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_link"
-                            app:tint="@color/primary"/>
+                            app:tint="#FF5722" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -420,43 +444,51 @@
                             android:text="Social Links"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginStart="8dp"/>
+                            android:textColor="#222222"
+                            android:layout_marginStart="12dp" />
 
                     </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="LinkedIn (optional)"
+                        android:hint="LinkedIn Profile"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="12dp"
+                        android:layout_marginBottom="16dp"
                         app:startIconDrawable="@drawable/ic_linkedin"
-                        app:startIconTint="@color/accent">
+                        app:startIconTint="#0077B5"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etLinkedIn"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textUri"
-                            android:maxLines="1"/>
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="GitHub (optional)"
+                        android:hint="GitHub Profile"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         app:startIconDrawable="@drawable/ic_github"
-                        app:startIconTint="@color/accent">
+                        app:startIconTint="#333333"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusBottomEnd="12dp">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etGitHub"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textUri"
-                            android:maxLines="1"/>
+                            android:maxLines="1" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 
@@ -484,8 +516,8 @@
             android:text="Save Card"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:backgroundTint="@color/primary"
-            android:textColor="@android:color/white"/>
+            android:backgroundTint="#FF5722"
+            android:textColor="@android:color/white" />
 
     </LinearLayout>
 

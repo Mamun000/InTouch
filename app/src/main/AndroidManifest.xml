@@ -75,10 +75,10 @@
         </activity>
         <activity
             android:name=".SignUp"
-            android:exported="false" />
+            android:exported="true" />
         <activity
             android:name=".ForgetPassword"
-            android:exported="false" />
+            android:exported="true" />
     </application>
 
 </manifest>

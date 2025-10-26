@@ -4,65 +4,217 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background">
+    android:fitsSystemWindows="true"
+    android:background="#FAFAFA">
 
-    <!-- Toolbar -->
+    <!-- Toolbar with gradient background -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
-        android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_history"
+                app:tint="#FF5722"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Scan History"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#222222" />
+
+        </LinearLayout>
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Header Section with Stats -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@android:color/white"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Total Scans"
+                android:textSize="12sp"
+                android:textColor="#999999"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvTotalScans"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#FF5722" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="40dp"
+            android:background="#E0E0E0"
+            android:layout_marginHorizontal="16dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Unique Contacts"
+                android:textSize="12sp"
+                android:textColor="#999999"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/tvUniqueContacts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#FF5722" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="40dp"
+            android:background="#E0E0E0"
+            android:layout_marginHorizontal="16dp" />
+
+        <!-- Clear History Button -->
+        <ImageView
+            android:id="@+id/btnClearHistory"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_delete"
+            android:padding="8dp"
+            app:tint="#E53935"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Clear history"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0" />
+
+    <!-- Main Content -->
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
-        <!-- RecyclerView -->
+        <!-- RecyclerView with padding -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp"
-            android:clipToPadding="false"/>
+            android:padding="12dp"
+            android:clipToPadding="false"
+            android:background="#FAFAFA" />
 
         <!-- Empty State -->
         <LinearLayout
             android:id="@+id/tvEmptyState"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center"
             android:padding="32dp"
-            android:visibility="gone">
+            android:visibility="gone"
+            android:background="#FAFAFA">
 
-            <ImageView
+            <!-- Empty State Icon -->
+            <FrameLayout
                 android:layout_width="120dp"
                 android:layout_height="120dp"
-                android:src="@drawable/ic_empty_history"
-                android:alpha="0.5"
-                app:tint="@color/text_secondary"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="24dp">
 
+                <View
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:background="@drawable/circle_background_primary"
+                    android:alpha="0.1" />
+
+                <ImageView
+                    android:layout_width="60dp"
+                    android:layout_height="60dp"
+                    android:src="@drawable/ic_history"
+                    android:scaleType="centerInside"
+                    app:tint="#FF5722"
+                    android:layout_gravity="center" />
+
+            </FrameLayout>
+
+            <!-- Title -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="No Scan History"
-                android:textSize="18sp"
+                android:text="No Scans Yet"
+                android:textSize="22sp"
                 android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="8dp"/>
+                android:textColor="#222222"
+                android:layout_marginBottom="12dp"
+                android:gravity="center" />
 
+            <!-- Subtitle -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Scan someone's card to see them here"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:gravity="center"/>
+                android:text="Start scanning NFC cards or QR codes to see them here"
+                android:textSize="15sp"
+                android:textColor="#999999"
+                android:gravity="center"
+                android:layout_marginBottom="32dp" />
+
+            <!-- CTA Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStartScanning"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:paddingHorizontal="32dp"
+                android:text="Start Scanning"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:backgroundTint="#FF5722"
+                android:textColor="@android:color/white"
+                app:cornerRadius="8dp" />
 
         </LinearLayout>
 

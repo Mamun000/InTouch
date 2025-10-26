@@ -4,17 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background">
+    android:fitsSystemWindows="true"
+    android:background="#FAFAFA">
 
     <!-- Toolbar -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
+        android:background="@android:color/white"
         android:elevation="4dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+        app:title="Settings"
+        app:titleTextColor="@android:color/black" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -27,22 +28,23 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Appearance Section -->
+            <!-- APPEARANCE Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="APPEARANCE"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="4dp"/>
+                android:textColor="#FF5722"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
+                app:cardElevation="0dp"
                 android:layout_marginBottom="24dp"
                 app:cardBackgroundColor="@android:color/white">
 
@@ -50,21 +52,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="4dp">
+                    android:divider="@drawable/settings_divider"
+                    android:showDividers="middle">
 
                     <!-- Dark Mode -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:gravity="center_vertical">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_dark_mode"
-                            app:tint="@color/primary"/>
+                            app:tint="#FF5722" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -78,21 +81,23 @@
                                 android:layout_height="wrap_content"
                                 android:text="Dark Mode"
                                 android:textSize="16sp"
-                                android:textColor="@color/text_primary"/>
+                                android:textColor="#222222"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Enable dark theme"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"/>
+                                android:textSize="13sp"
+                                android:textColor="#999999"
+                                android:layout_marginTop="2dp" />
 
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/switchDarkMode"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
 
@@ -100,22 +105,23 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Notifications Section -->
+            <!-- NOTIFICATIONS Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="NOTIFICATIONS"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="4dp"/>
+                android:textColor="#FF5722"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
+                app:cardElevation="0dp"
                 android:layout_marginBottom="24dp"
                 app:cardBackgroundColor="@android:color/white">
 
@@ -123,21 +129,22 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="4dp">
+                    android:divider="@drawable/settings_divider"
+                    android:showDividers="middle">
 
-                    <!-- Notifications -->
+                    <!-- Push Notifications -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:gravity="center_vertical">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_notifications"
-                            app:tint="@color/secondary"/>
+                            app:tint="#FF5722" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -151,43 +158,39 @@
                                 android:layout_height="wrap_content"
                                 android:text="Push Notifications"
                                 android:textSize="16sp"
-                                android:textColor="@color/text_primary"/>
+                                android:textColor="#222222"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Receive scan notifications"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"/>
+                                android:textSize="13sp"
+                                android:textColor="#999999"
+                                android:layout_marginTop="2dp" />
 
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/switchNotifications"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#E0E0E0"
-                        android:layout_marginStart="52dp"/>
 
                     <!-- Vibration -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:gravity="center_vertical">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_vibrate"
-                            app:tint="@color/secondary"/>
+                            app:tint="#FF5722" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -201,43 +204,39 @@
                                 android:layout_height="wrap_content"
                                 android:text="Vibration"
                                 android:textSize="16sp"
-                                android:textColor="@color/text_primary"/>
+                                android:textColor="#222222"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Vibrate on scan"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"/>
+                                android:textSize="13sp"
+                                android:textColor="#999999"
+                                android:layout_marginTop="2dp" />
 
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/switchVibration"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#E0E0E0"
-                        android:layout_marginStart="52dp"/>
 
                     <!-- Sound -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:gravity="center_vertical">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_volume"
-                            app:tint="@color/secondary"/>
+                            app:tint="#FF5722" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -251,21 +250,23 @@
                                 android:layout_height="wrap_content"
                                 android:text="Sound"
                                 android:textSize="16sp"
-                                android:textColor="@color/text_primary"/>
+                                android:textColor="#222222"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Play sound on scan"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"/>
+                                android:textSize="13sp"
+                                android:textColor="#999999"
+                                android:layout_marginTop="2dp" />
 
                         </LinearLayout>
 
                         <androidx.appcompat.widget.SwitchCompat
                             android:id="@+id/switchSound"
                             android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"/>
+                            android:layout_height="wrap_content" />
 
                     </LinearLayout>
 
@@ -273,22 +274,95 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Data Section -->
+            <!-- DATA Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="DATA"
                 android:textSize="12sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="4dp"/>
+                android:textColor="#FF5722"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp" />
 
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
+                app:cardElevation="0dp"
+                android:layout_marginBottom="24dp"
+                app:cardBackgroundColor="@android:color/white">
+
+                <LinearLayout
+                    android:id="@+id/layoutClearHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_delete"
+                        app:tint="#E53935" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Clear Scan History"
+                            android:textSize="16sp"
+                            android:textColor="#222222"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Delete all scanned contacts"
+                            android:textSize="13sp"
+                            android:textColor="#999999"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_arrow_right"
+                        app:tint="#CCCCCC" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- ABOUT Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ABOUT"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#FF5722"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="12dp"
+                android:layout_marginStart="4dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
                 android:layout_marginBottom="24dp"
                 app:cardBackgroundColor="@android:color/white">
 
@@ -296,85 +370,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="4dp">
-
-                    <!-- Clear History -->
-                    <LinearLayout
-                        android:id="@+id/layoutClearHistory"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:padding="12dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_delete"
-                            app:tint="@color/error"/>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Clear Scan History"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Delete all scanned contacts"
-                                android:textSize="12sp"
-                                android:textColor="@color/text_secondary"/>
-
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_arrow_right"
-                            app:tint="@color/text_secondary"/>
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <!-- About Section -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ABOUT"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@color/primary"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="4dp"/>
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="2dp"
-                android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="@android:color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="4dp">
+                    android:divider="@drawable/settings_divider"
+                    android:showDividers="middle">
 
                     <!-- About -->
                     <LinearLayout
@@ -382,7 +379,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
                         android:focusable="true"
@@ -392,7 +389,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_info"
-                            app:tint="@color/accent"/>
+                            app:tint="#FF5722" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -400,22 +397,17 @@
                             android:layout_weight="1"
                             android:text="About App"
                             android:textSize="16sp"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginStart="16dp"/>
+                            android:textColor="#222222"
+                            android:textStyle="bold"
+                            android:layout_marginStart="16dp" />
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_arrow_right"
-                            app:tint="@color/text_secondary"/>
+                            app:tint="#CCCCCC" />
 
                     </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#E0E0E0"
-                        android:layout_marginStart="52dp"/>
 
                     <!-- Privacy -->
                     <LinearLayout
@@ -423,7 +415,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
                         android:focusable="true"
@@ -433,7 +425,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_privacy"
-                            app:tint="@color/accent"/>
+                            app:tint="#FF5722" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -441,22 +433,17 @@
                             android:layout_weight="1"
                             android:text="Privacy Policy"
                             android:textSize="16sp"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginStart="16dp"/>
+                            android:textColor="#222222"
+                            android:textStyle="bold"
+                            android:layout_marginStart="16dp" />
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_arrow_right"
-                            app:tint="@color/text_secondary"/>
+                            app:tint="#CCCCCC" />
 
                     </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#E0E0E0"
-                        android:layout_marginStart="52dp"/>
 
                     <!-- Help -->
                     <LinearLayout
@@ -464,7 +451,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:padding="12dp"
+                        android:padding="16dp"
                         android:background="?attr/selectableItemBackground"
                         android:clickable="true"
                         android:focusable="true"
@@ -474,7 +461,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_help"
-                            app:tint="@color/accent"/>
+                            app:tint="#FF5722" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -482,14 +469,15 @@
                             android:layout_weight="1"
                             android:text="Help and Support"
                             android:textSize="16sp"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginStart="16dp"/>
+                            android:textColor="#222222"
+                            android:textStyle="bold"
+                            android:layout_marginStart="16dp" />
 
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_arrow_right"
-                            app:tint="@color/text_secondary"/>
+                            app:tint="#CCCCCC" />
 
                     </LinearLayout>
 
@@ -500,14 +488,14 @@
             <!-- Version -->
             <TextView
                 android:id="@+id/tvAppVersion"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Version 1.0.0"
                 android:textSize="12sp"
-                android:textColor="@color/text_secondary"
-                android:layout_gravity="center"
+                android:textColor="#999999"
+                android:gravity="center"
                 android:layout_marginTop="8dp"
-                android:layout_marginBottom="16dp"/>
+                android:layout_marginBottom="24dp" />
 
         </LinearLayout>
 

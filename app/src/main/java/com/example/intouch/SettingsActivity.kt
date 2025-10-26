@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.SwitchCompat
@@ -112,9 +113,9 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun setupListeners() {
         switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
-            saveSetting(KEY_DARK_MODE, isChecked)
-            applyTheme()
-            recreate()
+//            saveSetting(KEY_DARK_MODE, isChecked)
+//            recreate()
+            Toast.makeText(this,"Stay tuned for dark mode",Toast.LENGTH_SHORT).show()
         }
 
         switchNotifications.setOnCheckedChangeListener { _, isChecked ->
