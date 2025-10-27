@@ -12,7 +12,8 @@ import java.util.*
 
 class ChatsAdapter(
     private val chats: List<ChatItem>,
-    private val onChatClick: (ChatItem) -> Unit
+    private val onChatClick: (ChatItem) -> Unit,
+    private val onChatLongClick: (ChatItem) -> Unit
 ) : RecyclerView.Adapter<ChatsAdapter.ChatViewHolder>() {
 
     inner class ChatViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -50,6 +51,11 @@ class ChatsAdapter(
 
             itemView.setOnClickListener {
                 onChatClick(chat)
+            }
+
+            itemView.setOnLongClickListener {
+                onChatLongClick(chat)
+                true
             }
         }
 
