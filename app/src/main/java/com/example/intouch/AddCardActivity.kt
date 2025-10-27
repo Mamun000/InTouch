@@ -10,13 +10,17 @@ import android.nfc.Tag
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
+import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -42,12 +46,14 @@ class AddCardActivity : AppCompatActivity() {
     private lateinit var etBio: EditText
     private lateinit var etEmail: EditText
     private lateinit var etPhone: EditText
-    private lateinit var etLinkedIn: EditText
-    private lateinit var etGitHub: EditText
     private lateinit var cbNoNFC: CheckBox
     private lateinit var btnScanNFC: Button
     private lateinit var btnSave: Button
+    private lateinit var btnAddSocialLink: Button
+    private lateinit var containerSocialLinks: LinearLayout
     private lateinit var tvNfcStatus: TextView
+    
+    private data class SocialLink(val name: String, val url: String)
 
     companion object {
         private const val PICK_IMAGE_REQUEST = 1
@@ -71,12 +77,16 @@ class AddCardActivity : AppCompatActivity() {
         etBio = findViewById(R.id.etBio)
         etEmail = findViewById(R.id.etEmail)
         etPhone = findViewById(R.id.etPhone)
-        etLinkedIn = findViewById(R.id.etLinkedIn)
-        etGitHub = findViewById(R.id.etGitHub)
         cbNoNFC = findViewById(R.id.cbNoNFC)
         btnScanNFC = findViewById(R.id.btnScanNFC)
         btnSave = findViewById(R.id.btnSave)
+        btnAddSocialLink = findViewById(R.id.btnAddSocialLink)
+        containerSocialLinks = findViewById(R.id.containerSocialLinks)
         tvNfcStatus = findViewById(R.id.tvNfcStatus)
+        
+        btnAddSocialLink.setOnClickListener {
+            addSocialLinkEntry(null, null)
+        }
 
         etEmail.setText(auth.currentUser?.email ?: "")
         etEmail.isEnabled = false
@@ -195,8 +205,28 @@ class AddCardActivity : AppCompatActivity() {
                         etOrganization.setText(snapshot.child("organization").value?.toString() ?: "")
                         etBio.setText(snapshot.child("bio").value?.toString() ?: "")
                         etPhone.setText(snapshot.child("phone").value?.toString() ?: "")
-                        etLinkedIn.setText(snapshot.child("linkedIn").value?.toString() ?: "")
-                        etGitHub.setText(snapshot.child("gitHub").value?.toString() ?: "")
+                        
+                        // Load social links
+                        containerSocialLinks.removeAllViews()
+                        val socialLinks = snapshot.child("socialLinks")
+                        if (socialLinks.exists()) {
+                            socialLinks.children.forEach { linkSnapshot ->
+                                val name = linkSnapshot.child("name").value?.toString() ?: ""
+                                val url = linkSnapshot.child("url").value?.toString() ?: ""
+                                addSocialLinkEntry(name, url)
+                            }
+                        } else {
+                            // Backward compatibility: load old linkedIn and gitHub fields
+                            val linkedIn = snapshot.child("linkedIn").value?.toString() ?: ""
+                            val gitHub = snapshot.child("gitHub").value?.toString() ?: ""
+                            
+                            if (!linkedIn.isEmpty()) {
+                                addSocialLinkEntry("LinkedIn", linkedIn)
+                            }
+                            if (!gitHub.isEmpty()) {
+                                addSocialLinkEntry("GitHub", gitHub)
+                            }
+                        }
 
                         val savedNfcId = snapshot.child("nfcCardId").value?.toString()
                         if (savedNfcId != null) {
@@ -409,7 +439,49 @@ class AddCardActivity : AppCompatActivity() {
         }
     }
 
+    private fun addSocialLinkEntry(name: String?, url: String?) {
+        val inflater = LayoutInflater.from(this)
+        val linkView = inflater.inflate(R.layout.item_social_link, containerSocialLinks, false)
+        
+        val etLinkName = linkView.findViewById<TextInputEditText>(R.id.etLinkName)
+        val etLinkUrl = linkView.findViewById<TextInputEditText>(R.id.etLinkUrl)
+        val btnRemoveLink = linkView.findViewById<Button>(R.id.btnRemoveLink)
+        
+        if (name != null) etLinkName.setText(name)
+        if (url != null) etLinkUrl.setText(url)
+        
+        btnRemoveLink.setOnClickListener {
+            containerSocialLinks.removeView(linkView)
+        }
+        
+        containerSocialLinks.addView(linkView)
+    }
+    
+    private fun getSocialLinks(): List<SocialLink> {
+        val links = mutableListOf<SocialLink>()
+        for (i in 0 until containerSocialLinks.childCount) {
+            val linkView = containerSocialLinks.getChildAt(i)
+            val etLinkName = linkView.findViewById<TextInputEditText>(R.id.etLinkName)
+            val etLinkUrl = linkView.findViewById<TextInputEditText>(R.id.etLinkUrl)
+            
+            val name = etLinkName.text.toString().trim()
+            val url = etLinkUrl.text.toString().trim()
+            
+            if (name.isNotEmpty() && url.isNotEmpty()) {
+                links.add(SocialLink(name, url))
+            }
+        }
+        return links
+    }
+
     private fun saveToDatabase(userId: String) {
+        val socialLinksMap = mutableMapOf<String, Any>()
+        val socialLinks = getSocialLinks()
+        socialLinks.forEachIndexed { index, link ->
+            val linkMap = mapOf("name" to link.name, "url" to link.url)
+            socialLinksMap[index.toString()] = linkMap
+        }
+        
         val cardData = hashMapOf(
             "fullName" to etFullName.text.toString().trim(),
             "profession" to etProfession.text.toString().trim(),
@@ -417,10 +489,9 @@ class AddCardActivity : AppCompatActivity() {
             "bio" to etBio.text.toString().trim(),
             "email" to etEmail.text.toString().trim(),
             "phone" to etPhone.text.toString().trim(),
-            "linkedIn" to etLinkedIn.text.toString().trim(),
-            "gitHub" to etGitHub.text.toString().trim(),
             "nfcCardId" to nfcCardId,
-            "userId" to userId
+            "userId" to userId,
+            "socialLinks" to socialLinksMap
         )
 
         if (!profileImageBase64.isNullOrEmpty()) {

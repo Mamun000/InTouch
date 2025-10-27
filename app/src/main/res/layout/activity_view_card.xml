@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     android:orientation="vertical"
     android:background="#FAFAFA">
 
@@ -363,107 +364,14 @@
 
                     </LinearLayout>
 
-                    <!-- LinkedIn -->
+                    <!-- Dynamic Social Links Container -->
                     <LinearLayout
-                        android:id="@+id/layoutLinkedIn"
+                        android:id="@+id/containerSocialLinks"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:visibility="gone">
+                        android:orientation="vertical">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_linkedin"
-                            app:tint="#0077B5" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="LinkedIn"
-                                android:textSize="12sp"
-                                android:textColor="#999999" />
-
-                            <TextView
-                                android:id="@+id/tvLinkedIn"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="LinkedIn Profile"
-                                android:textSize="15sp"
-                                android:textColor="#0077B5"
-                                android:layout_marginTop="4dp" />
-
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_open_link"
-                            app:tint="#CCCCCC" />
-
-                    </LinearLayout>
-
-                    <!-- GitHub -->
-                    <LinearLayout
-                        android:id="@+id/layoutGitHub"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:padding="12dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:visibility="gone">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_github"
-                            app:tint="#333333" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="16dp">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="GitHub"
-                                android:textSize="12sp"
-                                android:textColor="#999999" />
-
-                            <TextView
-                                android:id="@+id/tvGitHub"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="GitHub Profile"
-                                android:textSize="15sp"
-                                android:textColor="#333333"
-                                android:layout_marginTop="4dp" />
-
-                        </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/ic_open_link"
-                            app:tint="#CCCCCC" />
+                        <!-- Social links will be added here dynamically -->
 
                     </LinearLayout>
 

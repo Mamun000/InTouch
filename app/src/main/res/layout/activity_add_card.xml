@@ -450,48 +450,31 @@
 
                     </LinearLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <!-- Dynamic Social Links Container -->
+                    <LinearLayout
+                        android:id="@+id/containerSocialLinks"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="LinkedIn Profile"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_marginBottom="16dp"
-                        app:startIconDrawable="@drawable/ic_linkedin"
-                        app:startIconTint="#0077B5"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusBottomEnd="12dp">
+                        android:orientation="vertical">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etLinkedIn"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textUri"
-                            android:maxLines="1" />
+                        <!-- Social links will be added here dynamically -->
 
-                    </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
 
-                    <com.google.android.material.textfield.TextInputLayout
+                    <!-- Add Link Button -->
+                    <Button
+                        android:id="@+id/btnAddSocialLink"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="GitHub Profile"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        app:startIconDrawable="@drawable/ic_github"
-                        app:startIconTint="#333333"
-                        app:boxCornerRadiusTopStart="12dp"
-                        app:boxCornerRadiusTopEnd="12dp"
-                        app:boxCornerRadiusBottomStart="12dp"
-                        app:boxCornerRadiusBottomEnd="12dp">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etGitHub"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textUri"
-                            android:maxLines="1" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
+                        android:layout_height="48dp"
+                        android:text="+ Add Social Link"
+                        android:textSize="14sp"
+                        android:layout_marginTop="8dp"
+                        android:drawableStart="@drawable/ic_add"
+                        android:drawablePadding="8dp"
+                        android:gravity="center"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:strokeColor="#4CAF50"
+                        android:textColor="#4CAF50" />
 
                 </LinearLayout>
 

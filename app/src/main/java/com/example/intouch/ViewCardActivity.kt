@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -42,10 +43,7 @@ class ViewCardActivity : AppCompatActivity() {
     private lateinit var layoutPhone: LinearLayout
     private lateinit var tvPhone: TextView
     private lateinit var cardSocial: CardView
-    private lateinit var layoutLinkedIn: LinearLayout
-    private lateinit var tvLinkedIn: TextView
-    private lateinit var layoutGitHub: LinearLayout
-    private lateinit var tvGitHub: TextView
+    private lateinit var containerSocialLinks: LinearLayout
     private lateinit var cardQRCode: CardView
     private lateinit var ivQRCode: ImageView
     private lateinit var btnShare: Button
@@ -104,10 +102,7 @@ class ViewCardActivity : AppCompatActivity() {
         layoutPhone = findViewById(R.id.layoutPhone)
         tvPhone = findViewById(R.id.tvPhone)
         cardSocial = findViewById(R.id.cardSocial)
-        layoutLinkedIn = findViewById(R.id.layoutLinkedIn)
-        tvLinkedIn = findViewById(R.id.tvLinkedIn)
-        layoutGitHub = findViewById(R.id.layoutGitHub)
-        tvGitHub = findViewById(R.id.tvGitHub)
+        containerSocialLinks = findViewById(R.id.containerSocialLinks)
         cardQRCode = findViewById(R.id.cardQRCode)
         ivQRCode = findViewById(R.id.ivQRCode)
         btnShare = findViewById(R.id.btnShare)
@@ -206,32 +201,38 @@ class ViewCardActivity : AppCompatActivity() {
                             cardContact.visibility = View.GONE
                         }
 
-                        // LinkedIn
-                        val linkedIn = snapshot.child("linkedIn").value?.toString()
-                        if (!linkedIn.isNullOrEmpty()) {
-                            tvLinkedIn.text = linkedIn
-                            layoutLinkedIn.visibility = View.VISIBLE
-                            layoutLinkedIn.setOnClickListener {
-                                openUrl(linkedIn)
+                        // Social Links
+                        containerSocialLinks.removeAllViews()
+                        val socialLinks = snapshot.child("socialLinks")
+                        var hasSocialLinks = false
+                        
+                        if (socialLinks.exists()) {
+                            socialLinks.children.forEach { linkSnapshot ->
+                                val name = linkSnapshot.child("name").value?.toString() ?: ""
+                                val url = linkSnapshot.child("url").value?.toString() ?: ""
+                                
+                                if (name.isNotEmpty() && url.isNotEmpty()) {
+                                    addSocialLinkView(name, url)
+                                    hasSocialLinks = true
+                                }
                             }
                         } else {
-                            layoutLinkedIn.visibility = View.GONE
-                        }
-
-                        // GitHub
-                        val gitHub = snapshot.child("gitHub").value?.toString()
-                        if (!gitHub.isNullOrEmpty()) {
-                            tvGitHub.text = gitHub
-                            layoutGitHub.visibility = View.VISIBLE
-                            layoutGitHub.setOnClickListener {
-                                openUrl(gitHub)
+                            // Backward compatibility: display old linkedIn and gitHub fields
+                            val linkedIn = snapshot.child("linkedIn").value?.toString() ?: ""
+                            val gitHub = snapshot.child("gitHub").value?.toString() ?: ""
+                            
+                            if (linkedIn.isNotEmpty()) {
+                                addSocialLinkView("LinkedIn", linkedIn)
+                                hasSocialLinks = true
                             }
-                        } else {
-                            layoutGitHub.visibility = View.GONE
+                            if (gitHub.isNotEmpty()) {
+                                addSocialLinkView("GitHub", gitHub)
+                                hasSocialLinks = true
+                            }
                         }
-
+                        
                         // Check if social card should be visible
-                        if (linkedIn.isNullOrEmpty() && gitHub.isNullOrEmpty()) {
+                        if (!hasSocialLinks) {
                             cardSocial.visibility = View.GONE
                         }
 
@@ -261,6 +262,23 @@ class ViewCardActivity : AppCompatActivity() {
         }
     }
 
+    private fun addSocialLinkView(name: String, url: String) {
+        val inflater = LayoutInflater.from(this)
+        val linkView = inflater.inflate(R.layout.item_social_link_view, containerSocialLinks, false)
+        
+        val tvLinkLabel = linkView.findViewById<TextView>(R.id.tvLinkLabel)
+        val tvLinkUrl = linkView.findViewById<TextView>(R.id.tvLinkUrl)
+        
+        tvLinkLabel.text = name
+        tvLinkUrl.text = url
+        
+        linkView.setOnClickListener {
+            openUrl(url)
+        }
+        
+        containerSocialLinks.addView(linkView)
+    }
+    
     private fun generateQRCode(userId: String) {
         try {
             val writer = QRCodeWriter()
