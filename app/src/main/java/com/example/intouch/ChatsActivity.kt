@@ -159,69 +159,99 @@ class ChatsActivity : AppCompatActivity() {
     }
 
     private fun loadChatItem(currentUserId: String, friendUserId: String) {
-        // Load friend details
-        database.reference.child("users").child(friendUserId)
+        val chatId = getChatId(currentUserId, friendUserId)
+        
+        // Check if current user has deleted this chat
+        database.reference.child("chats").child(chatId)
+            .child("deletedBy").child(currentUserId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(userSnapshot: DataSnapshot) {
-                    if (userSnapshot.exists()) {
-                        val fullName = userSnapshot.child("fullName").value?.toString() ?: "Unknown"
-                        val profession = userSnapshot.child("profession").value?.toString() ?: ""
-                        val profileImageData = userSnapshot.child("profileImage").value?.toString()
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    // If chat is deleted by current user, don't load it
+                    if (snapshot.exists() && snapshot.getValue(Boolean::class.java) == true) {
+                        // Remove from list if it exists
+                        chatsList.removeAll { it.chatId == chatId }
+                        adapter.notifyDataSetChanged()
+                        return
+                    }
 
-                        var profileBitmap: Bitmap? = null
-                        if (!profileImageData.isNullOrEmpty()) {
-                            try {
-                                profileBitmap = base64ToBitmap(profileImageData)
-                            } catch (e: Exception) {
-                                // Use default
-                            }
-                        }
+                    // Load friend details
+                    database.reference.child("users").child(friendUserId)
+                        .addListenerForSingleValueEvent(object : ValueEventListener {
+                            override fun onDataChange(userSnapshot: DataSnapshot) {
+                                if (userSnapshot.exists()) {
+                                    val fullName = userSnapshot.child("fullName").value?.toString() ?: "Unknown"
+                                    val profession = userSnapshot.child("profession").value?.toString() ?: ""
+                                    val profileImageData = userSnapshot.child("profileImage").value?.toString()
 
-                        // Load last message
-                        val chatId = getChatId(currentUserId, friendUserId)
-                        database.reference.child("chats").child(chatId).child("lastMessage")
-                            .addValueEventListener(object : ValueEventListener {
-                                override fun onDataChange(msgSnapshot: DataSnapshot) {
-                                    val lastMessage = msgSnapshot.child("text").value?.toString() ?: "No messages yet"
-                                    val timestamp = msgSnapshot.child("timestamp").value as? Long ?: 0L
-                                    val senderId = msgSnapshot.child("senderId").value?.toString() ?: ""
-                                    val unreadCount = 0 // We'll implement this later
-
-                                    val chatItem = ChatItem(
-                                        chatId = chatId,
-                                        friendUserId = friendUserId,
-                                        friendName = fullName,
-                                        friendProfession = profession,
-                                        profileImage = profileBitmap,
-                                        lastMessage = lastMessage,
-                                        timestamp = timestamp,
-                                        unreadCount = unreadCount,
-                                        isOwnMessage = senderId == currentUserId
-                                    )
-
-                                    // Update or add chat item
-                                    val existingIndex = chatsList.indexOfFirst { it.friendUserId == friendUserId }
-                                    if (existingIndex != -1) {
-                                        chatsList[existingIndex] = chatItem
-                                    } else {
-                                        chatsList.add(chatItem)
+                                    var profileBitmap: Bitmap? = null
+                                    if (!profileImageData.isNullOrEmpty()) {
+                                        try {
+                                            profileBitmap = base64ToBitmap(profileImageData)
+                                        } catch (e: Exception) {
+                                            // Use default
+                                        }
                                     }
 
-                                    // Sort by timestamp
-                                    chatsList.sortByDescending { it.timestamp }
-                                    adapter.notifyDataSetChanged()
-                                    hideEmptyState()
-                                }
+                                    // Listen for last message changes
+                                    database.reference.child("chats").child(chatId).child("lastMessage")
+                                        .addValueEventListener(object : ValueEventListener {
+                                            override fun onDataChange(msgSnapshot: DataSnapshot) {
+                                                val lastMessage = msgSnapshot.child("text").value?.toString() ?: "Say Hi 👋"
+                                                val timestamp = msgSnapshot.child("timestamp").value as? Long ?: 0L
+                                                val senderId = msgSnapshot.child("senderId").value?.toString() ?: ""
 
-                                override fun onCancelled(error: DatabaseError) {
-                                    // Handle error
+                                                // Load unread count from Firebase (use ValueEventListener for real-time updates)
+                                                database.reference.child("chats").child(chatId)
+                                                    .child("unreadCount").child(currentUserId)
+                                                    .addValueEventListener(object : ValueEventListener {
+                                                        override fun onDataChange(unreadSnapshot: DataSnapshot) {
+                                                            val unreadCount = unreadSnapshot.getValue(Int::class.java) ?: 0
+
+                                                            val chatItem = ChatItem(
+                                                                chatId = chatId,
+                                                                friendUserId = friendUserId,
+                                                                friendName = fullName,
+                                                                friendProfession = profession,
+                                                                profileImage = profileBitmap,
+                                                                lastMessage = lastMessage,
+                                                                timestamp = timestamp,
+                                                                unreadCount = unreadCount,
+                                                                isOwnMessage = senderId == currentUserId
+                                                            )
+
+                                                            // Update or add chat item
+                                                            val existingIndex = chatsList.indexOfFirst { it.friendUserId == friendUserId }
+                                                            if (existingIndex != -1) {
+                                                                chatsList[existingIndex] = chatItem
+                                                            } else {
+                                                                chatsList.add(chatItem)
+                                                            }
+
+                                                            // Sort by timestamp
+                                                            chatsList.sortByDescending { it.timestamp }
+                                                            adapter.notifyDataSetChanged()
+                                                            hideEmptyState()
+                                                        }
+
+                                                        override fun onCancelled(error: DatabaseError) {}
+                                                    })
+                                            }
+
+                                            override fun onCancelled(error: DatabaseError) {
+                                                // Handle error
+                                            }
+                                        })
                                 }
-                            })
-                    }
+                            }
+
+                            override fun onCancelled(error: DatabaseError) {
+                                // Handle error
+                            }
+                        })
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    // Handle error
+                    // Handle error - still try to load the chat
                 }
             })
     }
@@ -260,7 +290,7 @@ class ChatsActivity : AppCompatActivity() {
     private fun showDeleteChatDialog(chatItem: ChatItem) {
         AlertDialog.Builder(this)
             .setTitle("Delete Chat?")
-            .setMessage("Are you sure you want to delete the chat with ${chatItem.friendName}? This will delete all messages and cannot be undone.")
+            .setMessage("Are you sure you want to delete the chat with ${chatItem.friendName}? This chat will be hidden from your chats list.")
             .setPositiveButton("Delete") { _, _ ->
                 deleteChat(chatItem)
             }
@@ -271,24 +301,67 @@ class ChatsActivity : AppCompatActivity() {
     private fun deleteChat(chatItem: ChatItem) {
         val currentUserId = auth.currentUser?.uid ?: return
 
-        // Remove from Firebase
+        // Mark chat as deleted by current user
         database.reference.child("chats").child(chatItem.chatId)
-            .removeValue()
+            .child("deletedBy")
+            .child(currentUserId)
+            .setValue(true)
             .addOnSuccessListener {
-                // Remove from local list
-                chatsList.removeAll { it.chatId == chatItem.chatId }
-                adapter.notifyDataSetChanged()
-                
-                // Show empty state if list is empty
-                if (chatsList.isEmpty()) {
-                    showEmptyState()
-                }
-                
-                Toast.makeText(this, "Chat deleted successfully", Toast.LENGTH_SHORT).show()
+                // Check if both users have deleted the chat
+                database.reference.child("chats").child(chatItem.chatId)
+                    .child("deletedBy")
+                    .addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            val deletedUsers = snapshot.children.count()
+                            val participantIds = chatItem.chatId.split("_")
+                            
+                            // If both users deleted the chat, delete it completely
+                            if (deletedUsers >= 2 && participantIds.size == 2) {
+                                val user1 = participantIds[0]
+                                val user2 = participantIds[1]
+                                
+                                // Get all deleted user IDs
+                                val deletedUserIds = mutableListOf<String>()
+                                snapshot.children.forEach {
+                                    if (it.value == true) {
+                                        deletedUserIds.add(it.key ?: "")
+                                    }
+                                }
+                                
+                                // If both participants deleted, remove entire chat
+                                if (deletedUserIds.contains(user1) && deletedUserIds.contains(user2)) {
+                                    database.reference.child("chats").child(chatItem.chatId)
+                                        .removeValue()
+                                        .addOnSuccessListener {
+                                            removeChatFromList(chatItem)
+                                        }
+                                } else {
+                                    removeChatFromList(chatItem)
+                                }
+                            } else {
+                                removeChatFromList(chatItem)
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            removeChatFromList(chatItem)
+                        }
+                    })
             }
             .addOnFailureListener { e ->
                 Toast.makeText(this, "Failed to delete chat: ${e.message}", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun removeChatFromList(chatItem: ChatItem) {
+        chatsList.removeAll { it.chatId == chatItem.chatId }
+        adapter.notifyDataSetChanged()
+        
+        if (chatsList.isEmpty()) {
+            showEmptyState()
+        }
+        
+        Toast.makeText(this, "Chat deleted", Toast.LENGTH_SHORT).show()
     }
 }
 

@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:background="#FAFAFA"
     tools:context=".SuggestionDetailActivity">
 
@@ -12,7 +13,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:backgroundTint="@color/white"
+        android:background="@color/primary"
         android:elevation="4dp"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp">
@@ -22,7 +23,7 @@
             android:layout_height="40dp"
             android:src="@drawable/ic_arrow_back"
             android:backgroundTint="@color/white"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@color/white"
             android:contentDescription="Back"
             android:onClick="onBackPressed" />
 
@@ -33,7 +34,7 @@
             android:text="Suggested Connection"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/primary"
+            android:textColor="@color/white"
             android:layout_marginStart="16dp" />
 
     </LinearLayout>

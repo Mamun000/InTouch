@@ -42,6 +42,7 @@ class ChatActivity : AppCompatActivity() {
         setupRecyclerView()
         setupSendButton()
         loadMessages()
+        markMessagesAsRead()
     }
 
     private fun initializeViews() {
@@ -125,6 +126,40 @@ class ChatActivity : AppCompatActivity() {
             return
         }
 
+        // Check if both users have deleted the chat (fresh start)
+        database.reference.child("chats").child(chatId)
+            .child("deletedBy")
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val user1 = chatId.split("_")[0]
+                    val user2 = chatId.split("_")[1]
+                    
+                    val user1Deleted = snapshot.child(user1).getValue(Boolean::class.java) ?: false
+                    val user2Deleted = snapshot.child(user2).getValue(Boolean::class.java) ?: false
+                    
+                    // If both users deleted, clean up old messages and deletedBy
+                    if (user1Deleted && user2Deleted) {
+                        // Remove old messages
+                        database.reference.child("chats").child(chatId).child("messages")
+                            .removeValue()
+                        
+                        // Remove deletedBy flag
+                        database.reference.child("chats").child(chatId).child("deletedBy")
+                            .removeValue()
+                    }
+                    
+                    // Proceed to send message
+                    sendMessageToFirebase(messageText, currentUserId)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    // If error, still try to send message
+                    sendMessageToFirebase(messageText, currentUserId)
+                }
+            })
+    }
+    
+    private fun sendMessageToFirebase(messageText: String, currentUserId: String) {
         val timestamp = System.currentTimeMillis()
         val messageId = database.reference.child("chats").child(chatId).child("messages").push().key ?: run {
             Toast.makeText(this, "Failed to generate message ID", Toast.LENGTH_SHORT).show()
@@ -153,9 +188,20 @@ class ChatActivity : AppCompatActivity() {
                 database.reference.child("chats").child(chatId).child("lastMessage")
                     .setValue(lastMessageData)
 
+                // Increment unread count for the receiver (only if receiver is not the sender)
+                if (friendUserId != currentUserId) {
+                    database.reference.child("chats").child(chatId)
+                        .child("unreadCount").child(friendUserId)
+                        .get().addOnSuccessListener { snapshot ->
+                            val currentCount = snapshot.getValue(Int::class.java) ?: 0
+                            database.reference.child("chats").child(chatId)
+                                .child("unreadCount").child(friendUserId)
+                                .setValue(currentCount + 1)
+                        }
+                }
+
                 // Clear input
                 etMessage.setText("")
-                Toast.makeText(this, "Message sent", Toast.LENGTH_SHORT).show()
             }
             .addOnFailureListener { exception ->
                 Toast.makeText(
@@ -164,6 +210,15 @@ class ChatActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+    }
+
+    private fun markMessagesAsRead() {
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        // Reset unread count to 0 when chat is opened
+        database.reference.child("chats").child(chatId)
+            .child("unreadCount").child(currentUserId)
+            .setValue(0)
     }
 
     override fun onSupportNavigateUp(): Boolean {

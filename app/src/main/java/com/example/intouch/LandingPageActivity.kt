@@ -305,16 +305,13 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     }
 
     private fun scanQRCode() {
-        // ✅ FIX: Lock to portrait orientation for QR scanner
-        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-
         val integrator = IntentIntegrator(this)
         integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
         integrator.setPrompt("Scan QR Code")
         integrator.setCameraId(0)
         integrator.setBeepEnabled(true)
         integrator.setBarcodeImageEnabled(false)
-        integrator.setOrientationLocked(false)  // ✅ CHANGED: Allow orientation to be managed by us
+        integrator.setOrientationLocked(true)  // Lock orientation to portrait
         integrator.initiateScan()
     }
 
