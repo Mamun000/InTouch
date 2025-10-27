@@ -76,4 +76,10 @@ dependencies {
 // DrawerLayout
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("androidx.multidex:multidex:2.0.1")
+    
+    // Retrofit for API calls
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 }

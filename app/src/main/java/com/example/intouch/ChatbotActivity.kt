@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,6 +14,9 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 data class ChatMessage(
     val text: String,
@@ -34,6 +36,8 @@ class ChatbotActivity : AppCompatActivity() {
 
     private val messages = mutableListOf<ChatMessage>()
     private lateinit var adapter: ChatMessageAdapter
+    private val aiService = AIClient.service
+    private var conversationHistory = StringBuilder()
     private var lastSuggestions: List<Map<String, Any>> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,14 +72,34 @@ class ChatbotActivity : AppCompatActivity() {
             }
         }
 
+        loadConversationHistory()
         showInitialMessage()
     }
 
+    private fun loadConversationHistory() {
+        val userId = auth.currentUser?.uid ?: return
+        database.reference.child("chat_history").child(userId)
+            .get().addOnSuccessListener { snapshot ->
+                if (snapshot.exists()) {
+                    val history = snapshot.child("conversation").getValue(String::class.java) ?: ""
+                    conversationHistory.append(history)
+                }
+            }
+    }
+
+    private fun saveConversationHistory() {
+        val userId = auth.currentUser?.uid ?: return
+        database.reference.child("chat_history").child(userId)
+            .child("conversation").setValue(conversationHistory.toString())
+    }
+
     private fun showInitialMessage() {
-        addMessage(
-            "Hi! 👋 I'm your InTouch AI Assistant. Tell me what you're looking for, and I'll suggest friends from your network who have the right skills!\n\nTry asking:\n• \"I need help with web development\"\n• \"Find someone who knows Android\"\n• \"I'm looking for a designer\"",
-            isUser = false
-        )
+        val initialText = if (conversationHistory.isEmpty()) {
+            "Hi! 👋 I'm your InTouch AI Assistant. I'm here to help you find the right connections and answer your questions!\n\nHow can I help you today?"
+        } else {
+            "Welcome back! How can I help you today?"
+        }
+        addMessage(initialText, isUser = false)
     }
 
     private fun addMessage(text: String, isUser: Boolean) {
@@ -83,20 +107,20 @@ class ChatbotActivity : AppCompatActivity() {
         adapter.notifyItemInserted(messages.size - 1)
         recyclerView.smoothScrollToPosition(messages.size - 1)
         emptyStateText.visibility = View.GONE
+
+        // Update conversation history
+        conversationHistory.append(if (isUser) "User: $text\n" else "Assistant: $text\n")
     }
 
     private fun generateAIResponse(userMessage: String) {
-        val messageLower = userMessage.toLowerCase().trim()
-
-        // Check if user is authenticated
         if (auth.currentUser == null) {
             addMessage("You need to be logged in to use the AI assistant. Please log in and try again.", isUser = false)
             return
         }
 
         // Check if user selected a suggestion by number
-        if (messageLower in listOf("1", "2", "3")) {
-            val suggestionIndex = messageLower.toInt() - 1
+        if (userMessage.trim() in listOf("1", "2", "3")) {
+            val suggestionIndex = userMessage.trim().toInt() - 1
             if (suggestionIndex < lastSuggestions.size) {
                 val selectedUser = lastSuggestions[suggestionIndex]
                 val userId = selectedUser["uid"] as? String ?: return
@@ -108,15 +132,113 @@ class ChatbotActivity : AppCompatActivity() {
             }
         }
 
-        // Show loading message
-        addMessage("Searching for matches... 🔍", isUser = false)
+        // Check if user wants to find connections
+        if (shouldSearchForConnections(userMessage)) {
+            searchForConnections(userMessage)
+            return
+        }
 
-        // Get all users from Firebase and process suggestions
+        // Show typing indicator
+        val loadingIndex = messages.size
+        addMessage("Thinking...", isUser = false)
+
+        // Build context for AI
+        val contextPrompt = buildContextPrompt(userMessage)
+        
+        val request = HuggingFaceRequest(
+            inputs = contextPrompt,
+            parameters = Parameters(
+                max_new_tokens = 150,
+                temperature = 0.7,
+                top_p = 0.9
+            )
+        )
+
+        aiService.getAIResponse(request).enqueue(object : Callback<List<HuggingFaceResponse>> {
+            override fun onResponse(
+                call: Call<List<HuggingFaceResponse>>,
+                response: Response<List<HuggingFaceResponse>>
+            ) {
+                // Remove loading message
+                if (loadingIndex < messages.size) {
+                    messages.removeAt(loadingIndex)
+                    adapter.notifyItemRemoved(loadingIndex)
+                }
+
+                if (response.isSuccessful && response.body() != null && response.body()!!.isNotEmpty()) {
+                    val aiResponse = response.body()!!.firstOrNull()
+                    if (aiResponse != null && aiResponse.generatedText.isNotEmpty()) {
+                        val responseText = cleanAIResponse(aiResponse.generatedText)
+                        addMessage(responseText, isUser = false)
+                        saveConversationHistory()
+                        
+                        // Also search for connections if relevant
+                        if (containsSkillsOrTopics(userMessage)) {
+                            searchForConnections(userMessage, showInitialMessage = false)
+                        }
+                    } else {
+                        // If no AI response, use fallback
+                        addIntelligentFallback(userMessage)
+                    }
+                } else {
+                    // If API failed, use fallback
+                    addIntelligentFallback(userMessage)
+                }
+            }
+
+            override fun onFailure(call: Call<List<HuggingFaceResponse>>, t: Throwable) {
+                // Remove loading message
+                if (loadingIndex < messages.size) {
+                    messages.removeAt(loadingIndex)
+                    adapter.notifyItemRemoved(loadingIndex)
+                }
+
+                // Try fallback response
+                addIntelligentFallback(userMessage)
+            }
+        })
+    }
+
+    private fun shouldSearchForConnections(message: String): Boolean {
+        val messageLower = message.lowercase()
+        val connectionKeywords = listOf(
+            "find", "search", "looking for", "need help with", "who knows",
+            "looking", "searching", "recommend", "suggest", "recommendation",
+            "android", "web", "development", "design", "programming", "coding",
+            "developer", "designer", "engineer", "skills", "expert"
+        )
+        return connectionKeywords.any { messageLower.contains(it) }
+    }
+
+    private fun containsSkillsOrTopics(message: String): Boolean {
+        val messageLower = message.lowercase()
+        val skillKeywords = listOf(
+            "android", "ios", "web", "python", "java", "kotlin", "javascript",
+            "react", "flutter", "design", "ui", "ux", "marketing", "sales",
+            "backend", "frontend", "fullstack", "devops", "database",
+            "programming", "coding", "developer", "programmer",
+            "html", "css", "sql", "php", "swift"
+        )
+        return skillKeywords.any { messageLower.contains(it) }
+    }
+
+    private fun searchForConnections(query: String, showInitialMessage: Boolean = true) {
+        val userId = auth.currentUser?.uid ?: return
+
+        if (showInitialMessage) {
+            addMessage("Searching for matches... 🔍", isUser = false)
+        }
+
+        // Get all users from Firebase
         val allUsers = mutableListOf<Map<String, Any>>()
         database.reference.child("users")
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (!snapshot.exists()) {
+                        if (showInitialMessage) {
+                            messages.removeAt(messages.size - 1)
+                            adapter.notifyItemRemoved(messages.size)
+                        }
                         addMessage("No users found in the database.", isUser = false)
                         return
                     }
@@ -131,21 +253,39 @@ class ChatbotActivity : AppCompatActivity() {
                     }
 
                     if (allUsers.isEmpty()) {
+                        if (showInitialMessage) {
+                            messages.removeAt(messages.size - 1)
+                            adapter.notifyItemRemoved(messages.size)
+                        }
                         addMessage("No users available. Please try again later.", isUser = false)
                     } else {
-                        processSuggestions(userMessage, allUsers, emptySet())
+                        processSuggestions(query, allUsers, emptySet(), showInitialMessage)
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
+                    if (showInitialMessage) {
+                        messages.removeAt(messages.size - 1)
+                        adapter.notifyItemRemoved(messages.size)
+                    }
                     addMessage("Sorry, I couldn't fetch user data. Error: ${error.message}\n\nPlease check your internet connection.", isUser = false)
                 }
             })
     }
 
-    private fun processSuggestions(query: String, allUsers: List<Map<String, Any>>, contactIds: Set<String> = emptySet()) {
+    private fun processSuggestions(
+        query: String,
+        allUsers: List<Map<String, Any>>,
+        contactIds: Set<String> = emptySet(),
+        showInitialMessage: Boolean = true
+    ) {
+        if (showInitialMessage) {
+            messages.removeAt(messages.size - 1)
+            adapter.notifyItemRemoved(messages.size)
+        }
+
         val currentUserId = auth.currentUser?.uid ?: return
-        val queryLower = query.toLowerCase()
+        val queryLower = query.lowercase()
 
         // Extract skills/keywords from query
         val skillKeywords = extractKeywords(queryLower)
@@ -153,24 +293,24 @@ class ChatbotActivity : AppCompatActivity() {
         // If no keywords extracted, try to use the query itself
         val searchKeywords = if (skillKeywords.isNotEmpty()) skillKeywords else listOf(queryLower)
 
-        // Find matching users and prioritize contacts
+        // Find matching users
         val allMatches = allUsers.filter { user ->
             val userId = user["uid"].toString()
-            val userSkills = (user["skills"] as? String)?.toLowerCase() ?: ""
-            val userBio = (user["bio"] as? String)?.toLowerCase() ?: ""
-            val userProfession = (user["profession"] as? String)?.toLowerCase() ?: ""
-            val userName = (user["fullName"] as? String)?.toLowerCase() ?: ""
+            val userSkills = (user["skills"] as? String)?.lowercase() ?: ""
+            val userBio = (user["bio"] as? String)?.lowercase() ?: ""
+            val userProfession = (user["profession"] as? String)?.lowercase() ?: ""
+            val userName = (user["fullName"] as? String)?.lowercase() ?: ""
 
             // Exclude current user
             val isNotCurrentUser = userId != currentUserId
-            
-            // Check if user has any useful info (skills, bio, or profession)
+
+            // Check if user has any useful info
             val hasRelevantInfo = userSkills.isNotEmpty() || userBio.isNotEmpty() || userProfession.isNotEmpty()
-            
-            // More flexible matching: check if any keywords match skills, bio, profession, or name
+
+            // More flexible matching
             val hasMatch = searchKeywords.any { keyword ->
                 keyword.isNotEmpty() && (
-                    userSkills.contains(keyword, ignoreCase = true) || 
+                    userSkills.contains(keyword, ignoreCase = true) ||
                     userBio.contains(keyword, ignoreCase = true) ||
                     userProfession.contains(keyword, ignoreCase = true) ||
                     userName.contains(keyword, ignoreCase = true)
@@ -189,6 +329,7 @@ class ChatbotActivity : AppCompatActivity() {
         if (matches.isNotEmpty()) {
             val response = buildSuggestionResponse(query, matches, contactIds)
             addMessage(response, isUser = false)
+            saveConversationHistory()
         } else {
             val keywordsUsed = searchKeywords.joinToString(", ")
             addMessage(
@@ -200,27 +341,30 @@ class ChatbotActivity : AppCompatActivity() {
                 "Or be more general, like \"someone who knows programming\" 👨‍💻",
                 isUser = false
             )
+            saveConversationHistory()
         }
     }
 
     private fun extractKeywords(query: String): List<String> {
         // Common stop words to filter out
-        val stopWords = setOf("i", "me", "my", "we", "us", "our", "you", "your", "he", "she", "him", "her", "his", "hers", 
+        val stopWords = setOf(
+            "i", "me", "my", "we", "us", "our", "you", "your", "he", "she", "him", "her", "his", "hers",
             "they", "them", "their", "it", "its", "what", "which", "who", "whom", "this", "that", "these", "those",
-            "a", "an", "the", "and", "or", "but", "if", "then", "else", "of", "at", "by", "for", "with", "from", 
+            "a", "an", "the", "and", "or", "but", "if", "then", "else", "of", "at", "by", "for", "with", "from",
             "to", "in", "on", "up", "about", "into", "through", "during", "before", "after", "above", "below",
-            "out", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", 
+            "out", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where",
             "why", "how", "all", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor",
             "not", "only", "own", "same", "so", "than", "too", "very", "can", "will", "just", "should", "now",
             "need", "looking", "for", "find", "someone", "help", "with", "knows", "is", "am", "are", "was", "were",
-            "be", "been", "being", "have", "has", "had", "do", "does", "did", "get", "got", "go", "want", "try")
+            "be", "been", "being", "have", "has", "had", "do", "does", "did", "get", "got", "go", "want", "try"
+        )
 
-        // Extract meaningful words from the query (words longer than 3 chars, not stop words)
+        // Extract meaningful words from the query
         val words = query.lowercase()
             .replace(Regex("[^a-z0-9\\s]"), " ") // Replace punctuation with spaces
             .split("\\s+".toRegex())
-            .filter { 
-                it.length > 3 && it !in stopWords && it !in listOf("the", "and", "for", "are", "but", "not", "you", "all", "can", "her", "was", "one", "our", "out", "day", "get", "has", "him", "his", "how", "its", "may", "new", "now", "old", "see", "two", "way", "who", "boy", "did", "man", "men", "put", "say", "say", "use", "war", "eat", "got", "got", "let", "run", "set")
+            .filter {
+                it.length > 3 && it !in stopWords
             }
             .distinct()
 
@@ -233,21 +377,24 @@ class ChatbotActivity : AppCompatActivity() {
             "graphic", "illustrator", "photoshop", "seo", "content", "writing",
             "finance", "accounting", "law", "legal", "medical", "healthcare",
             "development", "developer", "programming", "software", "coding", "code",
-            "html", "css", "sql", "php", "swift", "objective", "xcode", "android", "dart",
+            "html", "css", "sql", "php", "swift", "objective", "xcode", "dart",
             "bootstrap", "vue", "angular", "typescript", "nextjs", "node",
             "tailwind", "sass", "less", "stylus", "gulp", "webpack", "babel"
         )
 
         val skillMatches = commonSkills.filter { query.contains(it) }
-        
-        // Combine extracted words with skill matches, ensuring we return something meaningful
+
+        // Combine extracted words with skill matches
         val allKeywords = (words + skillMatches).distinct()
-        
-        // If we didn't find anything useful, return the query words as-is
+
         return if (allKeywords.isNotEmpty()) allKeywords else words
     }
 
-    private fun buildSuggestionResponse(query: String, matches: List<Map<String, Any>>, contactIds: Set<String> = emptySet()): String {
+    private fun buildSuggestionResponse(
+        query: String,
+        matches: List<Map<String, Any>>,
+        contactIds: Set<String> = emptySet()
+    ): String {
         var response = "✨ Great! I found ${matches.size} person${if (matches.size > 1) "s" else ""} who match your needs:\n\n"
 
         matches.forEachIndexed { index, user ->
@@ -259,7 +406,7 @@ class ChatbotActivity : AppCompatActivity() {
             val isContact = contactIds.contains(uid)
 
             response += "${index + 1}. 👤 *$name* ${if (isContact) "📌 (Contact)" else ""}\n"
-            
+
             // Show skills, bio, or profession - whichever is available
             when {
                 skills.isNotEmpty() -> response += "   💼 Skills: $skills\n"
@@ -267,7 +414,7 @@ class ChatbotActivity : AppCompatActivity() {
                 profession.isNotEmpty() -> response += "   💼 Profession: $profession\n"
                 else -> response += "   💼 Information not available\n"
             }
-            
+
             response += "\n"
         }
 
@@ -275,5 +422,76 @@ class ChatbotActivity : AppCompatActivity() {
         response += "Or ask me to find someone else?"
 
         return response
+    }
+
+    private fun buildContextPrompt(userMessage: String): String {
+        return buildString {
+            append("You are InTouch AI Assistant, a helpful AI chatbot for a professional networking app. ")
+            append("Your role is to help users find connections and answer their questions. ")
+            append("Be friendly, professional, and helpful. ")
+            append("Keep responses concise (under 150 words). ")
+            
+            // Add recent conversation context
+            if (conversationHistory.isNotEmpty()) {
+                val recentHistory = conversationHistory.toString()
+                    .lines()
+                    .takeLast(6)
+                    .joinToString("\n")
+                append("\n\nRecent conversation:\n$recentHistory")
+            }
+            
+            append("\n\nUser: $userMessage\n")
+            append("Assistant: ")
+        }
+    }
+
+    private fun cleanAIResponse(response: String): String {
+        return response
+            .trim()
+            .replace(Regex("Assistant:\\s*"), "")
+            .replace(Regex("User:\\s*"), "")
+            .trim()
+    }
+
+    private fun addIntelligentFallback(userMessage: String) {
+        val messageLower = userMessage.lowercase()
+        val fallbackResponse = when {
+            messageLower.contains("hello") || messageLower.contains("hi") || messageLower.contains("hey") ->
+                "Hello! 👋 How can I help you today with your networking needs?"
+            
+            messageLower.contains("help") || messageLower.contains("support") ->
+                "I'm here to help! 🎯 Tell me what you're looking for, and I can assist you with:\n" +
+                "• Finding connections in your network\n" +
+                "• Getting recommendations\n" +
+                "• General questions about InTouch\n\nWhat do you need help with?"
+            
+            messageLower.contains("thank") || messageLower.contains("thanks") ->
+                "You're welcome! 😊 Is there anything else I can help you with?"
+            
+            messageLower.contains("bye") || messageLower.contains("goodbye") ->
+                "Goodbye! 👋 Feel free to come back anytime if you need help. Take care!"
+            
+            messageLower.contains("find") || messageLower.contains("search") ->
+                "I can help you find people in your network! 🔍 Try asking about:\n" +
+                "• Skills (Android, Web, Design)\n" +
+                "• Professions\n" +
+                "• General interests\n\nWhat are you looking for?"
+            
+            messageLower.contains("how are you") ->
+                "I'm doing great, thanks for asking! 😊 I'm always here to help you with your networking needs. How can I assist you today?"
+            
+            else ->
+                "Thanks for your message! 💬 I understand you said: \"$userMessage\"\n\n" +
+                "Let me help you by checking if I can find relevant connections. " +
+                "Could you tell me more specifically what you're looking for?"
+        }
+        
+        addMessage(fallbackResponse, isUser = false)
+        saveConversationHistory()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        saveConversationHistory()
     }
 }
