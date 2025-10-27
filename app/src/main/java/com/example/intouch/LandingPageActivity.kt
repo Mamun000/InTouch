@@ -48,6 +48,7 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     private lateinit var cardScanHistory: CardView
     private lateinit var cardSettings: CardView
     private lateinit var tvWelcome: TextView
+    private lateinit var chatbotFab: com.google.android.material.floatingactionbutton.FloatingActionButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val prefs = getSharedPreferences("AppPreferences", MODE_PRIVATE)
@@ -69,12 +70,20 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
         setupToolbar()
         setupNavigationDrawer()
         setupBottomNavigation()
+        setupChatbotFab()
 
         // ✅ Setup Carousel with Real Images
         setupCarouselView()
 
+
         loadUserData()
         setupCardClicks()
+    }
+    private fun setupChatbotFab() {
+        chatbotFab = findViewById(R.id.chatbotFab)
+        chatbotFab.setOnClickListener {
+            startActivity(Intent(this, ChatbotActivity::class.java))
+        }
     }
     private fun setupCarouselView() {
         val viewPagerCarousel = findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPagerCarousel)
