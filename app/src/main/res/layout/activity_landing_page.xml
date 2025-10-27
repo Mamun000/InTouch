@@ -20,9 +20,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@android:color/white"
-            android:elevation="4dp"
-            android:paddingHorizontal="16dp">
+            android:background="@drawable/toolbar_background"
+            android:elevation="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -52,7 +51,6 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="250dp"
-                    android:background="@android:color/white"
                     android:elevation="2dp">
 
                     <!-- ViewPager2 for carousel -->
@@ -63,31 +61,19 @@
 
                 </LinearLayout>
 
-                <!-- Carousel Indicators -->
-                <LinearLayout
-                    android:id="@+id/indicatorsContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:padding="12dp"
-                    android:background="@android:color/white">
 
-                    <!-- Dots will be added programmatically -->
-
-                </LinearLayout>
 
                 <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:background="#F0F0F0" />
+<!--                <View-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="8dp"-->
+<!--                    android:background="#F0F0F0" />-->
 
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="8dp"
-                    android:background="#F0F0F0" />
+<!--                <View-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="8dp"-->
+<!--                    android:background="#F0F0F0" />-->
 
                 <!-- Welcome Card -->
                 <androidx.cardview.widget.CardView

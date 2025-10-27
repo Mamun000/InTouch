@@ -78,14 +78,15 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     }
     private fun setupCarouselView() {
         val viewPagerCarousel = findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPagerCarousel)
-        val indicatorsContainer = findViewById<android.widget.LinearLayout>(R.id.indicatorsContainer)
+        //val indicatorsContainer = findViewById<android.widget.LinearLayout>(R.id.indicatorsContainer)
 
         // ✅ Use your actual image drawables: img_1, img_2, img_3, img_4, etc.
         val carouselImages = listOf(
-            R.drawable.img_1,  // Your image 1
-            R.drawable.img,  // Your image 2
-            R.drawable.img_1,  // Your image 3 (if you have it)
-            R.drawable.img   // Your image 4 (if you have it)
+            R.drawable.img,
+            R.drawable.img_5,  // Your image 1
+            R.drawable.img_3,  // Your image 2
+            R.drawable.img_4  // Your image 3 (if you have it)
+               // Your image 4 (if you have it)
         )
 
         // Setup ViewPager2 with Carousel Adapter
@@ -103,47 +104,47 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
         }
 
         // Setup carousel indicators (dots)
-        setupIndicators(indicatorsContainer, carouselImages.size)
+        //setupIndicators(indicatorsContainer, carouselImages.size)
 
         // Update indicators when carousel page changes
-        viewPagerCarousel.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
-            override fun onPageSelected(position: Int) {
-                updateIndicators(indicatorsContainer, position)
-            }
-        })
+//        viewPagerCarousel.registerOnPageChangeCallback(object : androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+//            override fun onPageSelected(position: Int) {
+//                updateIndicators(indicatorsContainer, position)
+//            }
+//        })
 
         // Auto-scroll carousel every 4 seconds
         startAutoScroll(viewPagerCarousel, carouselImages.size)
     }
 
-    // ✅ Create carousel indicators (dots)
-    private fun setupIndicators(container: android.widget.LinearLayout, count: Int) {
-        container.removeAllViews()
-
-        for (i in 0 until count) {
-            val indicator = android.view.View(this).apply {
-                layoutParams = android.widget.LinearLayout.LayoutParams(12, 12).apply {
-                    setMargins(6, 0, 6, 0)
-                }
-                setBackgroundResource(
-                    if (i == 0) R.drawable.indicator_active
-                    else R.drawable.indicator_inactive
-                )
-            }
-            container.addView(indicator)
-        }
-    }
-
-    // ✅ Update indicators when page changes
-    private fun updateIndicators(container: android.widget.LinearLayout, activePosition: Int) {
-        for (i in 0 until container.childCount) {
-            val indicator = container.getChildAt(i)
-            indicator.setBackgroundResource(
-                if (i == activePosition) R.drawable.indicator_active
-                else R.drawable.indicator_inactive
-            )
-        }
-    }
+//    // ✅ Create carousel indicators (dots)
+//    private fun setupIndicators(container: android.widget.LinearLayout, count: Int) {
+//        container.removeAllViews()
+//
+//        for (i in 0 until count) {
+//            val indicator = android.view.View(this).apply {
+//                layoutParams = android.widget.LinearLayout.LayoutParams(12, 12).apply {
+//                    setMargins(6, 0, 6, 0)
+//                }
+//                setBackgroundResource(
+//                    if (i == 0) R.drawable.indicator_active
+//                    else R.drawable.indicator_inactive
+//                )
+//            }
+//            container.addView(indicator)
+//        }
+//    }
+//
+//    // ✅ Update indicators when page changes
+//    private fun updateIndicators(container: android.widget.LinearLayout, activePosition: Int) {
+//        for (i in 0 until container.childCount) {
+//            val indicator = container.getChildAt(i)
+//            indicator.setBackgroundResource(
+//                if (i == activePosition) R.drawable.indicator_active
+//                else R.drawable.indicator_inactive
+//            )
+//        }
+//    }
 
     // ✅ Auto-scroll carousel
     private fun startAutoScroll(viewPager: androidx.viewpager2.widget.ViewPager2, itemCount: Int) {

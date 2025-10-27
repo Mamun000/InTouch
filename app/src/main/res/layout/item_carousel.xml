@@ -1,23 +1,23 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/carouselCard"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@android:color/white">
 
-    <ImageView
-        android:id="@+id/carouselImage"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scaleType="centerCrop" />
+        android:layout_height="match_parent">
 
-<!--    &lt;!&ndash; Add text overlay here &ndash;&gt;-->
-<!--    <TextView-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="Your Title Here"-->
-<!--        android:textSize="24sp"-->
-<!--        android:textColor="@android:color/white"-->
-<!--        android:textStyle="bold"-->
-<!--        android:padding="7dp"-->
-<!--        android:layout_gravity="bottom"-->
-<!--        android:background="@drawable/carousel_gradient" />-->
+        <ImageView
+            android:id="@+id/carouselImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
 
-</FrameLayout>
+    </FrameLayout>
+
+</androidx.cardview.widget.CardView>
