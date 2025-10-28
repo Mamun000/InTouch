@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.cardview.widget.CardView
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -27,6 +28,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 
 class ViewCardActivity : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth
     private lateinit var database: FirebaseDatabase
     private lateinit var toolbar: Toolbar
     private lateinit var cardProfile: CardView
@@ -62,6 +64,7 @@ class ViewCardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_view_card)
 
+        auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance()
 
         initializeViews()
@@ -72,6 +75,7 @@ class ViewCardActivity : AppCompatActivity() {
 
         if (userId != null) {
             loadUserData(userId)
+            checkSavedStatus(userId)
             if (showQR) {
                 generateQRCode(userId)
                 cardQRCode.visibility = View.VISIBLE
@@ -125,8 +129,77 @@ class ViewCardActivity : AppCompatActivity() {
         }
 
         btnSaveContact.setOnClickListener {
-            Toast.makeText(this, "Save Contact - Feature coming soon", Toast.LENGTH_SHORT).show()
+            saveCard()
         }
+    }
+
+    private fun checkSavedStatus(cardUserId: String) {
+        val currentUserId = auth.currentUser?.uid ?: return
+
+        if (currentUserId == cardUserId) {
+            btnSaveContact.visibility = View.GONE
+            return
+        }
+
+        database.reference.child("savedCards").child(currentUserId).child(cardUserId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        btnSaveContact.text = "Saved"
+                    } else {
+                        btnSaveContact.text = "Save Card"
+                        btnSaveContact.isEnabled = true
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    btnSaveContact.text = "Save Card"
+                    btnSaveContact.isEnabled = true
+                }
+            })
+    }
+
+    private fun saveCard() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        val cardUserId = intent.getStringExtra("USER_ID") ?: return
+
+        if (currentUserId == cardUserId) {
+            Toast.makeText(this, "You cannot save your own card", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        database.reference.child("savedCards").child(currentUserId).child(cardUserId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        Toast.makeText(this@ViewCardActivity, "Card already saved", Toast.LENGTH_SHORT).show()
+                        btnSaveContact.isEnabled = false
+                    } else {
+                        saveCardToDatabase(currentUserId, cardUserId)
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@ViewCardActivity, "Error checking saved cards", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun saveCardToDatabase(currentUserId: String, cardUserId: String) {
+        val timestamp = System.currentTimeMillis()
+        val savedCardData = mapOf(
+            "cardUserId" to cardUserId,
+            "timestamp" to timestamp
+        )
+
+        database.reference.child("savedCards").child(currentUserId).child(cardUserId)
+            .setValue(savedCardData)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Card saved successfully!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Failed to save card", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun shareCard() {

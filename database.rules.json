@@ -1,0 +1,44 @@
+
+{
+  "rules": {
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".read": true,
+        ".write": "$uid === auth.uid",
+        "fcmToken": {
+          ".write": "$uid === auth.uid"
+        }
+      }
+    },
+    "nfcCards": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "scanHistory": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    },
+    "chats": {
+      ".read": "auth != null",
+      "$chatId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    "notifications": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null"
+      }
+    },
+    "savedCards": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "$uid === auth.uid"
+      }
+    }
+  }
+}

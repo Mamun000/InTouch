@@ -46,6 +46,7 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var cardAddNewCard: CardView
     private lateinit var cardScanHistory: CardView
+    private lateinit var cardSavedCards: CardView
     private lateinit var cardSettings: CardView
     private lateinit var tvWelcome: TextView
     private lateinit var chatbotFab: com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -173,6 +174,7 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
         bottomNavigation = findViewById(R.id.bottomNavigation)
         cardAddNewCard = findViewById(R.id.cardAddNewCard)
         cardScanHistory = findViewById(R.id.cardScanHistory)
+        cardSavedCards = findViewById(R.id.cardSavedCards)
         cardSettings = findViewById(R.id.cardSettings)
         tvWelcome = findViewById(R.id.tvWelcome)
     }
@@ -268,6 +270,10 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
 
         cardScanHistory.setOnClickListener {
             startActivity(Intent(this, ScanHistoryActivity::class.java))
+        }
+
+        cardSavedCards.setOnClickListener {
+            startActivity(Intent(this, SavedCardsActivity::class.java))
         }
 
         cardSettings.setOnClickListener {
