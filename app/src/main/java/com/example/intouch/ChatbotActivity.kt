@@ -217,7 +217,7 @@ class ChatbotActivity : AppCompatActivity() {
             "react", "flutter", "design", "ui", "ux", "marketing", "sales",
             "backend", "frontend", "fullstack", "devops", "database",
             "programming", "coding", "developer", "programmer",
-            "html", "css", "sql", "php", "swift"
+            "html", "css", "sql", "php", "swift","ai","ml"
         )
         return skillKeywords.any { messageLower.contains(it) }
     }

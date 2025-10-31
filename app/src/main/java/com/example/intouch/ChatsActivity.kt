@@ -147,7 +147,17 @@ class ChatsActivity : AppCompatActivity() {
                         val friendUserId = contactSnapshot.key
 
                         if (friendUserId != null) {
-                            loadChatItem(currentUserId, friendUserId)
+                            // Only show chats from scan history if connection is accepted
+                            database.reference.child("savedCards").child(currentUserId).child(friendUserId)
+                                .addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(savedSnapshot: DataSnapshot) {
+                                        if (savedSnapshot.exists()) {
+                                            loadChatItem(currentUserId, friendUserId)
+                                        }
+                                    }
+
+                                    override fun onCancelled(error: DatabaseError) {}
+                                })
                         }
                     }
                 }

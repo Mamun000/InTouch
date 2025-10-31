@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/action_clear_incoming"
+        android:title="Clear Incoming"
+        android:showAsAction="never" />
+    <item
+        android:id="@+id/action_clear_outgoing"
+        android:title="Clear Outgoing"
+        android:showAsAction="never" />
+</menu>
+
+

@@ -21,6 +21,12 @@
         ".write": "$uid === auth.uid"
       }
     },
+    "scanHistoryReceived": {
+      "$uid": {
+        ".read": "$uid === auth.uid",
+        ".write": "auth != null"
+      }
+    },
     "chats": {
       ".read": "auth != null",
       "$chatId": {
@@ -39,6 +45,10 @@
         ".read": "$uid === auth.uid",
         ".write": "$uid === auth.uid"
       }
+    },
+    "connectionRequests": {
+      ".read": "auth != null",
+      ".write": "auth != null"
     }
   }
 }

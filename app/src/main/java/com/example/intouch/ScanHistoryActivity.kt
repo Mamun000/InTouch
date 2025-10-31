@@ -79,9 +79,8 @@ class ScanHistoryActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
-        adapter = ScanHistoryAdapter(contactsList) { contact ->
-            openContactCard(contact)
-        }
+        // Disable opening profiles from scan history; tap does nothing
+        adapter = ScanHistoryAdapter(contactsList) { _ -> }
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@ScanHistoryActivity)
             adapter = this@ScanHistoryActivity.adapter
@@ -102,6 +101,7 @@ class ScanHistoryActivity : AppCompatActivity() {
     private fun loadScanHistory() {
         val userId = auth.currentUser?.uid ?: return
 
+        // Show the persons that I have scanned
         database.reference.child("scanHistory").child(userId)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -117,11 +117,13 @@ class ScanHistoryActivity : AppCompatActivity() {
                     val totalItems = snapshot.childrenCount.toInt()
 
                     for (contactSnapshot in snapshot.children) {
-                        val scannedUserId = contactSnapshot.child("scannedUserId").value?.toString()
+                        // Here the key is the scanned user's userId
+                        val scannedUserId = contactSnapshot.key
                         val timestamp = contactSnapshot.child("timestamp").value as? Long ?: 0L
+                        val method = contactSnapshot.child("method").value?.toString() ?: "NFC"
 
                         if (scannedUserId != null) {
-                            loadContactDetails(scannedUserId, timestamp) {
+                            loadContactDetails(scannedUserId, timestamp, method) {
                                 loadedCount++
                                 if (loadedCount == totalItems) {
                                     updateStats()
@@ -142,7 +144,7 @@ class ScanHistoryActivity : AppCompatActivity() {
             })
     }
 
-    private fun loadContactDetails(userId: String, timestamp: Long, onComplete: () -> Unit) {
+    private fun loadContactDetails(userId: String, timestamp: Long, method: String, onComplete: () -> Unit) {
         database.reference.child("users").child(userId)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -169,7 +171,8 @@ class ScanHistoryActivity : AppCompatActivity() {
                             email = email,
                             phone = phone,
                             profileImage = profileBitmap,
-                            timestamp = timestamp
+                            timestamp = timestamp,
+                            method = method
                         )
 
                         contactsList.add(contact)
@@ -197,9 +200,46 @@ class ScanHistoryActivity : AppCompatActivity() {
     }
 
     private fun openContactCard(contact: Contact) {
-        val intent = Intent(this, ViewCardActivity::class.java)
-        intent.putExtra("USER_ID", contact.userId)
-        startActivity(intent)
+        val currentUserId = auth.currentUser?.uid ?: return
+        val targetUserId = contact.userId
+
+        if (currentUserId == targetUserId) {
+            val intent = Intent(this, ViewCardActivity::class.java)
+            intent.putExtra("USER_ID", targetUserId)
+            startActivity(intent)
+            return
+        }
+
+        // Allow if QR scan, otherwise require accepted connection
+        if (contact.method == "QR") {
+            val intent = Intent(this, ViewCardActivity::class.java)
+            intent.putExtra("USER_ID", targetUserId)
+            intent.putExtra("ALLOW_DIRECT", true)
+            startActivity(intent)
+            return
+        }
+
+        // NFC path: require accepted connection (savedCards exists)
+        database.reference.child("savedCards").child(currentUserId).child(targetUserId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val intent = Intent(this@ScanHistoryActivity, ViewCardActivity::class.java)
+                        intent.putExtra("USER_ID", targetUserId)
+                        startActivity(intent)
+                    } else {
+                        Toast.makeText(
+                            this@ScanHistoryActivity,
+                            "Access not granted. Ask them to accept your request via NFC.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@ScanHistoryActivity, "Please try again", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun showEmptyState() {
@@ -259,5 +299,6 @@ data class Contact(
     val email: String,
     val phone: String,
     val profileImage: Bitmap?,
-    val timestamp: Long
+    val timestamp: Long,
+    val method: String
 )

@@ -23,6 +23,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InTouch">
         <activity
+            android:name=".RequestsActivity"
+            android:exported="true" />
+        <activity
             android:name=".SavedCardsActivity"
             android:exported="true" />
         <activity

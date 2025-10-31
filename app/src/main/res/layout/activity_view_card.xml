@@ -462,6 +462,22 @@
             android:textColor="@android:color/white" />
 
         <Button
+            android:id="@+id/btnChat"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:text="Chat"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:drawableStart="@drawable/ic_chat"
+            android:drawablePadding="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:strokeColor="#FF5722"
+            android:textColor="#FF5722" />
+
+        <Button
             android:id="@+id/btnSaveContact"
             android:layout_width="0dp"
             android:layout_height="56dp"

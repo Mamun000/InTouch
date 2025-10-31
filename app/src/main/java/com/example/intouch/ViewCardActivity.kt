@@ -50,6 +50,7 @@ class ViewCardActivity : AppCompatActivity() {
     private lateinit var ivQRCode: ImageView
     private lateinit var btnShare: Button
     private lateinit var btnSaveContact: Button
+    private lateinit var btnChat: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val prefs = getSharedPreferences("AppPreferences", MODE_PRIVATE)
@@ -111,6 +112,7 @@ class ViewCardActivity : AppCompatActivity() {
         ivQRCode = findViewById(R.id.ivQRCode)
         btnShare = findViewById(R.id.btnShare)
         btnSaveContact = findViewById(R.id.btnSaveContact)
+        btnChat = findViewById(R.id.btnChat)
     }
 
     private fun setupToolbar() {
@@ -130,6 +132,10 @@ class ViewCardActivity : AppCompatActivity() {
 
         btnSaveContact.setOnClickListener {
             saveCard()
+        }
+
+        btnChat.setOnClickListener {
+            startChat()
         }
     }
 
@@ -167,22 +173,50 @@ class ViewCardActivity : AppCompatActivity() {
             Toast.makeText(this, "You cannot save your own card", Toast.LENGTH_SHORT).show()
             return
         }
-
-        database.reference.child("savedCards").child(currentUserId).child(cardUserId)
-            .addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                        Toast.makeText(this@ViewCardActivity, "Card already saved", Toast.LENGTH_SHORT).show()
-                        btnSaveContact.isEnabled = false
-                    } else {
-                        saveCardToDatabase(currentUserId, cardUserId)
+        val allowDirect = intent.getBooleanExtra("ALLOW_DIRECT", false)
+        if (allowDirect) {
+            // Allow saving directly when accessed via QR
+            database.reference.child("savedCards").child(currentUserId).child(cardUserId)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            Toast.makeText(this@ViewCardActivity, "Card already saved", Toast.LENGTH_SHORT).show()
+                            btnSaveContact.isEnabled = false
+                        } else {
+                            saveCardToDatabase(currentUserId, cardUserId)
+                        }
                     }
-                }
 
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@ViewCardActivity, "Error checking saved cards", Toast.LENGTH_SHORT).show()
-                }
-            })
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@ViewCardActivity, "Error checking saved cards", Toast.LENGTH_SHORT).show()
+                    }
+                })
+            return
+        }
+
+        // Otherwise require accepted connection (NFC flow)
+        isAcceptedConnection(currentUserId, cardUserId) { accepted ->
+            if (!accepted) {
+                Toast.makeText(this, "You can save after your request is accepted.", Toast.LENGTH_SHORT).show()
+                return@isAcceptedConnection
+            }
+
+            database.reference.child("savedCards").child(currentUserId).child(cardUserId)
+                .addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.exists()) {
+                            Toast.makeText(this@ViewCardActivity, "Card already saved", Toast.LENGTH_SHORT).show()
+                            btnSaveContact.isEnabled = false
+                        } else {
+                            saveCardToDatabase(currentUserId, cardUserId)
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(this@ViewCardActivity, "Error checking saved cards", Toast.LENGTH_SHORT).show()
+                    }
+                })
+        }
     }
 
     private fun saveCardToDatabase(currentUserId: String, cardUserId: String) {
@@ -196,10 +230,108 @@ class ViewCardActivity : AppCompatActivity() {
             .setValue(savedCardData)
             .addOnSuccessListener {
                 Toast.makeText(this, "Card saved successfully!", Toast.LENGTH_SHORT).show()
+                // Ensure chat exists so both can see each other in chats
+                createChatIfNotExists(currentUserId, cardUserId)
             }
             .addOnFailureListener {
                 Toast.makeText(this, "Failed to save card", Toast.LENGTH_SHORT).show()
             }
+    }
+
+    private fun startChat() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        val otherUserId = intent.getStringExtra("USER_ID") ?: return
+
+        val allowDirect = intent.getBooleanExtra("ALLOW_DIRECT", false)
+        if (allowDirect) {
+            proceedToChat(currentUserId, otherUserId)
+            return
+        }
+
+        // Only allow chat if connection accepted (NFC path)
+        database.reference.child("savedCards").child(currentUserId).child(otherUserId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (!snapshot.exists()) {
+                        Toast.makeText(this@ViewCardActivity, "Chat available after request is accepted.", Toast.LENGTH_SHORT).show()
+                        return
+                    }
+
+                    proceedToChat(currentUserId, otherUserId)
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@ViewCardActivity, "Please try again", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
+
+    private fun proceedToChat(currentUserId: String, otherUserId: String) {
+        val chatId = getChatId(currentUserId, otherUserId)
+        val chatRef = database.reference.child("chats").child(chatId)
+        chatRef.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                val initData = mapOf(
+                    "createdAt" to System.currentTimeMillis(),
+                    "participants" to mapOf(
+                        currentUserId to true,
+                        otherUserId to true
+                    ),
+                    "unreadCount" to mapOf(
+                        currentUserId to 0,
+                        otherUserId to 0
+                    )
+                )
+                chatRef.setValue(initData)
+            }
+
+            val intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("FRIEND_USER_ID", otherUserId)
+            intent.putExtra("FRIEND_NAME", tvFullName.text.toString())
+            intent.putExtra("CHAT_ID", chatId)
+            startActivity(intent)
+        }
+    }
+
+    private fun isAcceptedConnection(userA: String, userB: String, callback: (Boolean) -> Unit) {
+        database.reference.child("savedCards").child(userA).child(userB)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    callback(snapshot.exists())
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    callback(false)
+                }
+            })
+    }
+
+    private fun getChatId(userId1: String, userId2: String): String {
+        return if (userId1 < userId2) {
+            "${userId1}_${userId2}"
+        } else {
+            "${userId2}_${userId1}"
+        }
+    }
+
+    private fun createChatIfNotExists(userA: String, userB: String) {
+        val chatId = getChatId(userA, userB)
+        val chatRef = database.reference.child("chats").child(chatId)
+        chatRef.get().addOnSuccessListener { snapshot ->
+            if (!snapshot.exists()) {
+                val initData = mapOf(
+                    "createdAt" to System.currentTimeMillis(),
+                    "participants" to mapOf(
+                        userA to true,
+                        userB to true
+                    ),
+                    "unreadCount" to mapOf(
+                        userA to 0,
+                        userB to 0
+                    )
+                )
+                chatRef.setValue(initData)
+            }
+        }
     }
 
     private fun shareCard() {

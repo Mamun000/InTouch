@@ -253,6 +253,10 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
                     startActivity(Intent(this, ChatsActivity::class.java))
                     true
                 }
+                R.id.nav_requests -> {
+                    startActivity(Intent(this, RequestsActivity::class.java))
+                    true
+                }
                 R.id.nav_scan_qr -> {
                     scanQRCode()
                     true
@@ -435,18 +439,53 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
     }
 
     private fun lookupUserByNfcUid(nfcUid: String) {
+        val currentUserId = auth.currentUser?.uid ?: return
+        
         database.reference.child("nfcCards").child(nfcUid)
             .addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     if (snapshot.exists()) {
-                        val userId = snapshot.value.toString()
+                        val scannedUserId = snapshot.value.toString()
 
-                        // Save to scan history
-                        saveScanHistory(userId)
+                        // Don't create request for own card
+                        if (currentUserId == scannedUserId) {
+                            val intent = Intent(this@LandingPageActivity, ViewCardActivity::class.java)
+                            intent.putExtra("USER_ID", scannedUserId)
+                            startActivity(intent)
+                            return
+                        }
 
-                        val intent = Intent(this@LandingPageActivity, ViewCardActivity::class.java)
-                        intent.putExtra("USER_ID", userId)
-                        startActivity(intent)
+                        // Check if already have connection (accepted request or saved card)
+                        checkExistingConnection(currentUserId, scannedUserId) { hasConnection ->
+                            if (hasConnection) {
+                                // Already connected, show card directly
+                                val intent = Intent(this@LandingPageActivity, ViewCardActivity::class.java)
+                                intent.putExtra("USER_ID", scannedUserId)
+                                startActivity(intent)
+                            } else {
+                                // Check if request already exists
+                                checkExistingRequest(currentUserId, scannedUserId) { requestExists ->
+                                    if (requestExists) {
+                                        Toast.makeText(
+                                            this@LandingPageActivity,
+                                            "Request already sent or pending",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        // Create new connection request
+                                        createConnectionRequest(currentUserId, scannedUserId)
+                                        Toast.makeText(
+                                            this@LandingPageActivity,
+                                            "Connection request sent!",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                }
+                            }
+                        }
+
+                        // Save to scan history as NFC
+                        saveScanHistory(scannedUserId)
                     } else {
                         Toast.makeText(
                             this@LandingPageActivity,
@@ -466,7 +505,64 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
             })
     }
 
-    private fun saveScanHistory(scannedUserId: String) {
+    private fun checkExistingConnection(currentUserId: String, otherUserId: String, callback: (Boolean) -> Unit) {
+        // Check if card is already saved (means connection exists)
+        database.reference.child("savedCards").child(currentUserId).child(otherUserId)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    callback(snapshot.exists())
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    callback(false)
+                }
+            })
+    }
+
+    private fun checkExistingRequest(requesterId: String, requestedId: String, callback: (Boolean) -> Unit) {
+        // Check both directions: requester->requested and requested->requester
+        val requestId1 = "${requesterId}_${requestedId}"
+        val requestId2 = "${requestedId}_${requesterId}"
+
+        database.reference.child("connectionRequests").child(requestId1)
+            .addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        callback(true)
+                    } else {
+                        // Check reverse direction
+                        database.reference.child("connectionRequests").child(requestId2)
+                            .addListenerForSingleValueEvent(object : ValueEventListener {
+                                override fun onDataChange(snapshot2: DataSnapshot) {
+                                    callback(snapshot2.exists())
+                                }
+                                override fun onCancelled(error: DatabaseError) {
+                                    callback(false)
+                                }
+                            })
+                    }
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    callback(false)
+                }
+            })
+    }
+
+    private fun createConnectionRequest(requesterId: String, requestedId: String) {
+        val requestId = "${requesterId}_${requestedId}"
+        val timestamp = System.currentTimeMillis()
+
+        val requestData = mapOf(
+            "requesterId" to requesterId,
+            "requestedId" to requestedId,
+            "timestamp" to timestamp,
+            "status" to "pending"
+        )
+
+        database.reference.child("connectionRequests").child(requestId)
+            .setValue(requestData)
+    }
+
+    private fun saveScanHistory(scannedUserId: String, method: String = "NFC") {
         val currentUserId = auth.currentUser?.uid ?: return
 
         // Don't save if scanning own card
@@ -475,14 +571,26 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
         val timestamp = System.currentTimeMillis()
         val scanData = mapOf(
             "scannedUserId" to scannedUserId,
-            "timestamp" to timestamp
+            "timestamp" to timestamp,
+            "method" to method
         )
 
-        // Save to current user's scan history
+        // Save to current user's scan history (outgoing scans - who I scanned)
         database.reference.child("scanHistory")
             .child(currentUserId)
             .child(scannedUserId)
             .setValue(scanData)
+
+        // Also save to the target user's "received" history (incoming scans - who scanned me)
+        val receivedData = mapOf(
+            "scannerUserId" to currentUserId,
+            "timestamp" to timestamp,
+            "method" to method
+        )
+        database.reference.child("scanHistoryReceived")
+            .child(scannedUserId)
+            .child(currentUserId)
+            .setValue(receivedData)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -493,11 +601,12 @@ class LandingPageActivity : AppCompatActivity(), NavigationView.OnNavigationItem
             } else {
                 val userId = result.contents
 
-                // Save to scan history
-                saveScanHistory(userId)
+                // Save to scan history as QR
+                saveScanHistory(userId, "QR")
 
                 val intent = Intent(this, ViewCardActivity::class.java)
                 intent.putExtra("USER_ID", userId)
+                intent.putExtra("ALLOW_DIRECT", true)
                 startActivity(intent)
             }
         } else {
