@@ -12,7 +12,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
+        android:background="@color/primary"
         android:elevation="4dp">
 
         <LinearLayout
@@ -26,7 +26,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_save"
-                app:tint="#FF5722"
+                app:tint="#FFFFFF"
                 android:layout_marginEnd="12dp" />
 
             <TextView
@@ -35,7 +35,7 @@
                 android:text="Saved Cards"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="#222222" />
+                android:textColor="@color/white" />
 
         </LinearLayout>
 

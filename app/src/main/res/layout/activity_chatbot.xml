@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:text="Online"
             android:textSize="12sp"
-            android:textColor="#4CAF50" />
+            android:textColor="@color/white" />
 
     </LinearLayout>
 

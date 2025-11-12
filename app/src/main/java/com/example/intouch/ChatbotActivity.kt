@@ -205,7 +205,7 @@ class ChatbotActivity : AppCompatActivity() {
             "find", "search", "looking for", "need help with", "who knows",
             "looking", "searching", "recommend", "suggest", "recommendation",
             "android", "web", "development", "design", "programming", "coding",
-            "developer", "designer", "engineer", "skills", "expert"
+            "developer", "designer", "engineer", "skills", "expert", "ai", "ml"
         )
         return connectionKeywords.any { messageLower.contains(it) }
     }

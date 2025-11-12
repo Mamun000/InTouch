@@ -8,14 +8,15 @@ plugins {
 
 android {
     namespace = "com.example.intouch"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.intouch"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        multiDexEnabled = true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -30,11 +31,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
@@ -69,11 +70,7 @@ dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.zxing:core:3.5.2")
 
-    // Material Design
-    implementation("com.google.android.material:material:1.11.0")
-// CardView
-    implementation("androidx.cardview:cardview:1.0.0")
-// DrawerLayout
+    // DrawerLayout
     implementation("androidx.drawerlayout:drawerlayout:1.2.0")
     implementation("androidx.multidex:multidex:2.0.1")
     
