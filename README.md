@@ -19,7 +19,7 @@ The application brings identity sharing and contact-related tools together in on
 The authentication flow includes login, account creation, Google sign-in entry points, and password-reset screens.
 
 <p align="center">
-  <img src="docs/images/authentication-screens.png" alt="InTouch login, create account, and reset password screens" width="900" />
+  <img src="authentication-screens.png" alt="InTouch login, create account, and reset password screens" width="900" />
 </p>
 
 ### Home dashboard, digital card, and QR scanner
@@ -27,7 +27,7 @@ The authentication flow includes login, account creation, Google sign-in entry p
 The home screen provides quick access to digital-card creation, scan history, saved cards, and settings. The navigation also includes NFC sharing, chats, requests, and QR scanning.
 
 <p align="center">
-  <img src="docs/images/dashboard-and-qr-scanner.png" alt="InTouch home dashboard, NFC card-sharing concept, and QR scanner screen" width="900" />
+  <img src="dashboard-and-qr-scanner.png" alt="InTouch home dashboard, NFC card-sharing concept, and QR scanner screen" width="900" />
 </p>
 
 ## Key Features
